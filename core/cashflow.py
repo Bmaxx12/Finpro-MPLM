@@ -59,14 +59,17 @@ def compute_cashflow(
         taxable = income - op - depr
 
         if use_lcf:
-            # LCF mode: accumulate net revenue, tax only when positive
-            net_rev = income - op - depr
-            lcf += net_rev
-            if lcf > 0:
-                tax_base = lcf
-                lcf = 0.0
-            else:
+            # lcf nyimpen akumulasi rugi dari tahun sebelumnya
+            if taxable < 0:
+                lcf += taxable
                 tax_base = 0.0
+            else:
+                tax_base = taxable + lcf
+                if tax_base > 0:
+                    lcf = 0.0
+                else:
+                    lcf = tax_base
+                    tax_base = 0.0
         else:
             tax_base = max(taxable, 0.0)
 
@@ -75,7 +78,8 @@ def compute_cashflow(
         if yr == 0:
             ncf = -(cap + ncap)
         else:
-            ncf = income - op - tax
+            # kurangin juga sama cap dan ncap buat inves lanjutan
+            ncf = income - op - cap - ncap - tax
 
         cumulative += ncf
 

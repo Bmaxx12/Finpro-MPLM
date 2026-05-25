@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>FM NCF Calculator — Lapangan Migas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
@@ -48,10 +47,13 @@
     ⛽ FM NCF Calculator
     <span class="logo-badge">v2.0</span>
   </div>
-  <nav class="nav-links">
-    <a class="nav-link active" id="nav-projects" onclick="goToProjects()">📁 Projects</a>
-    <a href="/api/template-csv" class="nav-link">⬇ Template CSV</a>
-  </nav>
+  <div class="header-actions">
+    <nav class="nav-links">
+      <a class="nav-link active" id="nav-projects" onclick="goToProjects()">📁 Projects</a>
+      <a href="/api/template-csv" class="nav-link">⬇ Template CSV</a>
+    </nav>
+    <button id="theme-toggle" class="theme-btn" title="Ganti Tema">☀️</button>
+  </div>
 </header>
 
 <!-- ========== PAGE: PROJECT LIST ========== -->
@@ -66,8 +68,8 @@
   </div>
   <div id="empty-state" class="empty-state" style="display:none">
     <div style="font-size:3rem;margin-bottom:1rem;opacity:.5">📂</div>
-    <div style="font-size:1rem;font-family:var(--sans);font-weight:700;margin-bottom:.5rem">Belum ada project</div>
-    <div style="color:var(--muted);font-size:.8rem;margin-bottom:1.5rem">Buat project pertama Anda untuk mulai menghitung</div>
+    <div style="font-size:1rem;font-weight:700;margin-bottom:.5rem">Belum ada project</div>
+    <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1.5rem">Buat project pertama Anda untuk mulai menghitung</div>
     <button class="btn btn-primary" onclick="openModal()">+ Buat Project Baru</button>
   </div>
 </div>
@@ -98,7 +100,7 @@
           <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
             <div style="font-size:1.5rem;margin-bottom:.4rem">📁</div>
             Klik atau drag & drop file CSV di sini<br/>
-            <span style="font-size:.65rem;color:var(--muted)">Format: tahun, produksi_mbbl, harga_minyak_usd, capital_usd, non_capital_usd, opex_usd</span>
+            <span style="font-size:.65rem;color:var(--text-dim)">Format: tahun, produksi_mbbl, harga_minyak_usd, capital_usd, non_capital_usd, opex_usd</span>
           </div>
           <input type="file" id="file-input" accept=".csv" style="display:none" onchange="uploadCSV(this)"/>
         </div>
@@ -117,6 +119,10 @@
               <option value="unit_of_production">Unit of Production</option>
               <option value="sum_of_year">Sum of the Year Digits</option>
             </select>
+          </div>
+          <div class="form-row">
+            <label>Umur Depresiasi (Tahun)</label>
+            <input type="number" id="depr-life" value="10" min="1" step="1"/>
           </div>
           <div class="form-row" id="reserve-row" style="display:none">
             <label>Total Cadangan (MBbl) — untuk Unit of Production</label>
@@ -147,7 +153,7 @@
 
       <!-- Proyeksi Produksi (Regresi) -->
       <div class="panel" style="margin-top:1.5rem">
-        <div class="panel-header"><span class="dot" style="background:var(--blue)"></span> Proyeksi Produksi (Regresi)</div>
+        <div class="panel-header"><span class="dot" style="background:var(--blue);box-shadow:0 0 12px rgba(56,189,248,0.4)"></span> Proyeksi Produksi (Regresi)</div>
         <div class="panel-body">
           <div class="form-row">
             <label>Metode Regresi</label>
@@ -162,9 +168,13 @@
             <label>Tahun Proyeksi</label>
             <input type="number" id="proj-years" value="20" min="1" max="50" step="1"/>
           </div>
-          <button class="btn btn-secondary" style="width:100%; border-color:var(--blue); color:var(--blue)" onclick="applyRegressionProjection()">
+          <button class="btn btn-secondary" style="width:100%; border-color:var(--blue); color:var(--blue); margin-bottom: 0.5rem;" onclick="applyRegressionProjection()">
             ⚡ Proyeksikan &amp; Terapkan
           </button>
+          <button class="btn btn-secondary" style="width:100%; border-color:var(--amber); color:var(--amber)" onclick="projectProductionLinearRegression()">
+            📈 Proyeksi Regresi Linear ke Tahun 20
+          </button>
+          <div id="linear-reg-info" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-dim); text-align: center;"></div>
         </div>
       </div>
     </div>

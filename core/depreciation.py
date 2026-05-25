@@ -33,7 +33,19 @@ def unit_of_production(capital: float, reserve: float, production: list[float]) 
     """Di = (Prod_i / Reserve) × K."""
     if reserve <= 0:
         return [0.0] * len(production)
-    return [(p / reserve) * capital for p in production]
+    
+    depr = []
+    cum_depr = 0.0
+    for p in production:
+        d = (p / reserve) * capital
+        # buat mastiin nilai depresiasi ga lebih dari modal
+        if cum_depr + d > capital:
+            d = capital - cum_depr
+        if d < 0:
+            d = 0.0
+        depr.append(d)
+        cum_depr += d
+    return depr
 
 
 def sum_of_year(capital: float, n: int) -> list[float]:

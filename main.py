@@ -39,6 +39,7 @@ class YearRow(BaseModel):
 class CalcRequest(BaseModel):
     rows: List[YearRow]
     depr_method: str = "straight_line"
+    depr_life: int = 10
     tax_rate: float = 0.52
     discount_rate: float = 0.15
     use_lcf: bool = False
@@ -111,11 +112,11 @@ def run_calculation(req: CalcRequest) -> dict:
         reserve = req.reserve_mbbl or sum(production)
         prod_only = [p for p in production if p > 0]
         depr = compute_depreciation(
-            req.depr_method, total_capital, n_prod,
+            req.depr_method, total_capital, req.depr_life,
             reserve=reserve, production=prod_only
         )
     else:
-        depr = compute_depreciation(req.depr_method, total_capital, n_prod)
+        depr = compute_depreciation(req.depr_method, total_capital, req.depr_life)
 
     # Cash flow
     cf_rows = compute_cashflow(
@@ -148,6 +149,7 @@ def run_calculation(req: CalcRequest) -> dict:
         "n_prod_years": n_prod,
         "params": {
             "depr_method": req.depr_method,
+            "depr_life": req.depr_life,
             "tax_rate": req.tax_rate,
             "discount_rate": req.discount_rate,
             "use_lcf": req.use_lcf,
@@ -195,6 +197,7 @@ async def create_project(req: ProjectCreate):
         "rows": [],
         "params": {
             "depr_method": "declining_balance",
+            "depr_life": 10,
             "tax_rate": 0.52,
             "discount_rate": 0.15,
             "use_lcf": False,
@@ -254,6 +257,7 @@ async def calculate_project(project_id: str):
     calc_req = CalcRequest(
         rows=year_rows,
         depr_method=params.get("depr_method", "declining_balance"),
+        depr_life=params.get("depr_life", 10),
         tax_rate=params.get("tax_rate", 0.52),
         discount_rate=params.get("discount_rate", 0.15),
         use_lcf=params.get("use_lcf", False),
@@ -283,6 +287,7 @@ async def export_project_csv(project_id: str):
     calc_req = CalcRequest(
         rows=year_rows,
         depr_method=params.get("depr_method", "declining_balance"),
+        depr_life=params.get("depr_life", 10),
         tax_rate=params.get("tax_rate", 0.52),
         discount_rate=params.get("discount_rate", 0.15),
         use_lcf=params.get("use_lcf", False),

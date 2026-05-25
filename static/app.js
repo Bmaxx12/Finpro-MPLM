@@ -140,6 +140,7 @@ async function loadProjectDetail(id){
     // Load params
     const params = p.params || {};
     document.getElementById('depr-method').value = params.depr_method || 'declining_balance';
+    document.getElementById('depr-life').value = params.depr_life || 10;
     document.getElementById('tax-rate').value = ((params.tax_rate || 0.52) * 100).toFixed(1);
     document.getElementById('discount-rate').value = ((params.discount_rate || 0.15) * 100).toFixed(1);
     document.getElementById('use-lcf').checked = params.use_lcf || false;
@@ -172,6 +173,7 @@ async function saveProjectData(){
   collectRows();
   const params = {
     depr_method: document.getElementById('depr-method').value,
+    depr_life: parseInt(document.getElementById('depr-life').value) || 10,
     tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
     discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
     use_lcf: document.getElementById('use-lcf').checked,
@@ -317,6 +319,7 @@ async function runCalculation(){
       non_capital_usd: r.non_capital_usd, opex_usd: r.opex_usd,
     })),
     depr_method: document.getElementById('depr-method').value,
+    depr_life: parseInt(document.getElementById('depr-life').value) || 10,
     tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
     discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
     use_lcf: document.getElementById('use-lcf').checked,
@@ -396,7 +399,7 @@ function renderResults(data){
       <td class="${cls(r.taxable_income)}">${fmt(r.taxable_income,1)}</td>
       <td>${r.tax>0?'('+fmt(r.tax,1)+')':'—'}</td>
       <td class="${cls(r.ncf_undiscounted)} " style="font-weight:700">${fmt(r.ncf_undiscounted,1)}</td>
-      <td style="color:var(--muted)">${fmt(r.discount_factor,4)}</td>
+      <td style="color:var(--text-dim)">${fmt(r.discount_factor,4)}</td>
       <td class="${cls(r.ncf_discounted)}">${fmt(r.ncf_discounted,1)}</td>
       <td class="${cls(r.cumulative_ncf)}">${fmt(r.cumulative_ncf,1)}</td>
     </tr>`;
@@ -429,6 +432,12 @@ function renderChart(cf){
   const cumData = cf.map(r=>r.cumulative_ncf);
   const discData = cf.map(r=>r.ncf_discounted||0);
 
+  // ambil warna dari css variables biar sinkron sama tema aktif
+  const s = getComputedStyle(document.documentElement);
+  const cText = s.getPropertyValue('--text').trim() || '#f1f5f9';
+  const cDim = s.getPropertyValue('--text-dim').trim() || '#94a3b8';
+  const cBorder = s.getPropertyValue('--glass-border').trim() || 'rgba(255,255,255,0.1)';
+
   if(ncfChart) ncfChart.destroy();
   const ctx = document.getElementById('ncf-chart').getContext('2d');
   ncfChart = new Chart(ctx, {
@@ -438,22 +447,22 @@ function renderChart(cf){
         {
           type:'bar', label:'NCF Undiscounted ($)',
           data: ncfData,
-          backgroundColor: ncfData.map(v=>v>=0?'rgba(34,197,94,.7)':'rgba(239,68,68,.7)'),
-          borderColor: ncfData.map(v=>v>=0?'#22c55e':'#ef4444'),
-          borderWidth:1, yAxisID:'y',
+          backgroundColor: ncfData.map(v=>v>=0?'rgba(52, 211, 153, 0.7)':'rgba(251, 113, 133, 0.7)'),
+          borderColor: ncfData.map(v=>v>=0?'#34d399':'#fb7185'),
+          borderWidth:1, yAxisID:'y', borderRadius: 4,
         },
         {
           type:'line', label:'Kumulatif NCF ($)',
           data: cumData,
-          borderColor:'#f5a623', backgroundColor:'rgba(245,166,35,.1)',
-          borderWidth:2, fill:true, tension:.3, pointRadius:4,
-          pointBackgroundColor:'#f5a623', yAxisID:'y',
+          borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)',
+          borderWidth:2.5, fill:true, tension:.3, pointRadius:4,
+          pointBackgroundColor:'#fbbf24', yAxisID:'y',
         },
         {
           type:'line', label:'NCF Discounted ($)',
           data: discData,
-          borderColor:'#38bdf8', borderWidth:1.5, borderDash:[4,3],
-          pointRadius:3, pointBackgroundColor:'#38bdf8',
+          borderColor:'#a78bfa', borderWidth:2, borderDash:[5,4],
+          pointRadius:3, pointBackgroundColor:'#a78bfa',
           fill:false, tension:.3, yAxisID:'y',
         }
       ]
@@ -461,16 +470,16 @@ function renderChart(cf){
     options:{
       responsive:true, maintainAspectRatio:true,
       plugins:{
-        legend:{ labels:{ color:'#e8ecf0', font:{family:'Space Mono',size:11} } },
+        legend:{ labels:{ color: cText, font:{family:'JetBrains Mono',size:11} } },
         tooltip:{
-          backgroundColor:'#181c22', borderColor:'#2a313c', borderWidth:1,
-          titleColor:'#f5a623', bodyColor:'#e8ecf0',
+          backgroundColor:'rgba(20,16,36,0.9)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          titleColor:'#fbbf24', bodyColor: cText, cornerRadius: 8, padding: 10,
           callbacks:{ label(ctx){ return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID',{minimumFractionDigits:1})}` } }
         }
       },
       scales:{
-        x:{ ticks:{color:'#7a8799', font:{family:'Space Mono', size:10}}, grid:{color:'#2a313c'} },
-        y:{ ticks:{color:'#7a8799', font:{family:'Space Mono', size:10}, callback:v=>v.toLocaleString('id-ID',{maximumFractionDigits:0})}, grid:{color:'#2a313c'} }
+        x:{ ticks:{color: cDim, font:{family:'JetBrains Mono', size:10}}, grid:{color: cBorder} },
+        y:{ ticks:{color: cDim, font:{family:'JetBrains Mono', size:10}, callback:v=>v.toLocaleString('id-ID',{maximumFractionDigits:0})}, grid:{color: cBorder} }
       }
     }
   });
@@ -538,6 +547,11 @@ function renderProdChart(cf) {
     });
   }
   
+  const s = getComputedStyle(document.documentElement);
+  const cText = s.getPropertyValue('--text').trim() || '#f1f5f9';
+  const cDim = s.getPropertyValue('--text-dim').trim() || '#94a3b8';
+  const cBorder = s.getPropertyValue('--glass-border').trim() || 'rgba(255,255,255,0.1)';
+
   if (prodChart) prodChart.destroy();
   const ctx = document.getElementById('prod-chart').getContext('2d');
   
@@ -546,9 +560,9 @@ function renderProdChart(cf) {
       type: 'bar',
       label: 'Produksi Minyak (MBbl)',
       data: prodData,
-      backgroundColor: 'rgba(56,189,248,0.6)',
-      borderColor: '#38bdf8',
-      borderWidth: 1,
+      backgroundColor: 'rgba(167, 139, 250, 0.6)',
+      borderColor: '#a78bfa',
+      borderWidth: 1, borderRadius: 4,
       yAxisID: 'y'
     }
   ];
@@ -558,11 +572,11 @@ function renderProdChart(cf) {
       type: 'line',
       label: 'Tren Regresi / Decline Curve (MBbl)',
       data: regData,
-      borderColor: '#f5a623',
+      borderColor: '#fbbf24',
       borderDash: [5, 5],
       borderWidth: 2,
       pointRadius: 4,
-      pointBackgroundColor: '#f5a623',
+      pointBackgroundColor: '#fbbf24',
       fill: false,
       tension: 0.1,
       yAxisID: 'y'
@@ -578,13 +592,13 @@ function renderProdChart(cf) {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: { labels: { color: '#e8ecf0', font: { family: 'Space Mono', size: 11 } } },
+        legend: { labels: { color: cText, font: { family: 'JetBrains Mono', size: 11 } } },
         tooltip: {
-          backgroundColor: '#181c22',
-          borderColor: '#2a313c',
-          borderWidth: 1,
-          titleColor: '#38bdf8',
-          bodyColor: '#e8ecf0',
+          backgroundColor: 'rgba(20,16,36,0.9)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1, cornerRadius: 8, padding: 10,
+          titleColor: '#a78bfa',
+          bodyColor: cText,
           callbacks: {
             label(ctx) {
               return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID', { minimumFractionDigits: 1 })} MBbl`;
@@ -593,14 +607,14 @@ function renderProdChart(cf) {
         }
       },
       scales: {
-        x: { ticks: { color: '#7a8799', font: { family: 'Space Mono', size: 10 } }, grid: { color: '#2a313c' } },
+        x: { ticks: { color: cDim, font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: cBorder } },
         y: { 
           ticks: { 
-            color: '#7a8799', 
-            font: { family: 'Space Mono', size: 10 },
+            color: cDim, 
+            font: { family: 'JetBrains Mono', size: 10 },
             callback: v => v.toLocaleString('id-ID', { maximumFractionDigits: 0 })
           }, 
-          grid: { color: '#2a313c' } 
+          grid: { color: cBorder } 
         }
       }
     }
@@ -733,6 +747,82 @@ async function applyRegressionProjection() {
   runCalculation();
 }
 
+function projectProductionLinearRegression() {
+  collectRows();
+  
+  // ambil data yang belum diprediksi aja
+  const points = rows.filter(r => r.tahun > 0 && !r.is_predicted);
+  if (points.length < 2) {
+    showToast('❌ Butuh minimal 2 baris data produksi asli (belum diprediksi) untuk regresi', 'error');
+    return;
+  }
+  
+  const N = points.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  points.forEach(p => {
+    const x = p.tahun;
+    const y = p.produksi_mbbl;
+    sumX += x;
+    sumY += y;
+    sumXY += x * y;
+    sumX2 += x * x;
+  });
+  
+  const denom = (N * sumX2 - sumX * sumX);
+  if (Math.abs(denom) < 1e-9) {
+    showToast('❌ Error perhitungan regresi linear', 'error');
+    return;
+  }
+  
+  const slope = (N * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / N;
+  
+  document.getElementById('linear-reg-info').innerHTML = `Slope: ${slope.toFixed(2)}, Intercept: ${intercept.toFixed(2)}`;
+  
+  let maxYear = Math.max(...rows.map(r => r.tahun));
+  let lastPrice = 20.0;
+  let lastOpex = 175.0;
+  const lastRow = rows.find(r => r.tahun === maxYear);
+  if (lastRow) {
+    lastPrice = lastRow.harga_minyak_usd;
+    lastOpex = lastRow.opex_usd;
+  }
+  
+  let addedCount = 0;
+  for (let y = maxYear + 1; y <= 20; y++) {
+    let predProd = slope * y + intercept;
+    // pastiin produksi ga negatif
+    if (predProd < 0) predProd = 0;
+    
+    const id = rowIdCounter++;
+    rows.push({
+      _id: id,
+      tahun: y,
+      produksi_mbbl: parseFloat(predProd.toFixed(3)),
+      harga_minyak_usd: lastPrice,
+      capital_usd: 0.0,
+      non_capital_usd: 0.0,
+      opex_usd: lastOpex,
+      is_predicted: true
+    });
+    addedCount++;
+  }
+  
+  rows.sort((a, b) => a.tahun - b.tahun);
+  renderTable();
+  
+  window.regressionParams = {
+    type: 'linear',
+    slope,
+    intercept,
+    peakYear: 0,
+    isExpo: false
+  };
+  
+  showToast(`✓ Proyeksi Linear berhasil. Slope: ${slope.toFixed(2)}, Intercept: ${intercept.toFixed(2)}`);
+  runCalculation();
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function switchTab(id, el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -765,6 +855,7 @@ async function exportCSV(){
       non_capital_usd: r.non_capital_usd, opex_usd: r.opex_usd,
     })),
     depr_method: document.getElementById('depr-method').value,
+    depr_life: parseInt(document.getElementById('depr-life').value) || 10,
     tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
     discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
     use_lcf: document.getElementById('use-lcf').checked,
@@ -800,3 +891,29 @@ if(uploadZone){
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 loadProjectsList();
+
+// ── Theme Switcher: ganti tema dark / light ────────────────────────────────
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+  // cek tema tersimpan di localstorage, kalo ga ada pake dark sebagai default
+  const saved = localStorage.getItem('theme');
+  const initial = saved || 'dark';
+  
+  document.documentElement.setAttribute('data-theme', initial);
+  themeToggle.textContent = initial === 'dark' ? '🌙' : '☀️';
+  
+  // event klik buat toggle tema
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    themeToggle.textContent = next === 'dark' ? '🌙' : '☀️';
+    
+    // render ulang chart biar warnanya ikut berubah
+    if (ncfChart && lastResult) renderChart(lastResult.cashflow);
+    if (prodChart && lastResult) renderProdChart(lastResult.cashflow);
+  });
+}
+
