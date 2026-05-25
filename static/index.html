@@ -6,397 +6,7 @@
 <title>FM NCF Calculator — Lapangan Migas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
-<style>
-:root {
-  --bg:       #0a0c0f;
-  --surface:  #111418;
-  --surface2: #181c22;
-  --surface3: #1e242d;
-  --border:   #2a313c;
-  --border2:  #3a4455;
-  --text:     #e8ecf0;
-  --muted:    #7a8799;
-  --accent:   #f5a623;
-  --accent2:  #e85d04;
-  --green:    #22c55e;
-  --red:      #ef4444;
-  --blue:     #38bdf8;
-  --mono:     'Space Mono', monospace;
-  --sans:     'Syne', sans-serif;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--mono);
-  font-size:13px;
-  line-height:1.6;
-  min-height:100vh;
-}
-
-/* ── HEADER ── */
-header{
-  background:var(--surface);
-  border-bottom:2px solid var(--accent);
-  padding:0 2rem;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  height:64px;
-  position:sticky;top:0;z-index:100;
-}
-.logo{
-  font-family:var(--sans);
-  font-size:1.3rem;
-  font-weight:800;
-  color:var(--accent);
-  letter-spacing:-.02em;
-  display:flex;align-items:center;gap:.6rem;
-}
-.logo-badge{
-  background:var(--accent2);
-  color:#fff;
-  font-size:.6rem;
-  font-weight:700;
-  padding:.2rem .4rem;
-  border-radius:3px;
-  font-family:var(--mono);
-  letter-spacing:.05em;
-}
-.header-actions{display:flex;gap:.8rem;align-items:center}
-
-/* ── LAYOUT ── */
-.container{max-width:1400px;margin:0 auto;padding:2rem}
-.grid-main{
-  display:grid;
-  grid-template-columns:380px 1fr;
-  gap:1.5rem;
-  align-items:start;
-}
-@media(max-width:1100px){.grid-main{grid-template-columns:1fr}}
-
-/* ── PANELS ── */
-.panel{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:6px;
-  overflow:hidden;
-}
-.panel-header{
-  background:var(--surface2);
-  border-bottom:1px solid var(--border);
-  padding:.75rem 1.25rem;
-  display:flex;align-items:center;gap:.6rem;
-  font-family:var(--sans);
-  font-size:.75rem;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.12em;
-  color:var(--muted);
-}
-.panel-header .dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--accent);flex-shrink:0;
-}
-.panel-body{padding:1.25rem}
-
-/* ── FORM ELEMENTS ── */
-label{
-  display:block;
-  font-size:.7rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin-bottom:.35rem;
-}
-input,select{
-  width:100%;
-  background:var(--surface3);
-  border:1px solid var(--border);
-  color:var(--text);
-  font-family:var(--mono);
-  font-size:.8rem;
-  padding:.55rem .75rem;
-  border-radius:4px;
-  outline:none;
-  transition:border-color .15s;
-}
-input:focus,select:focus{border-color:var(--accent)}
-input[type=number]{text-align:right}
-select option{background:var(--surface2)}
-
-.form-row{margin-bottom:1rem}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-
-/* ── BUTTONS ── */
-.btn{
-  display:inline-flex;align-items:center;gap:.5rem;
-  padding:.55rem 1.1rem;
-  border-radius:4px;
-  font-family:var(--mono);
-  font-size:.75rem;
-  font-weight:700;
-  letter-spacing:.06em;
-  cursor:pointer;
-  transition:all .15s;
-  border:1px solid transparent;
-  text-decoration:none;
-}
-.btn-primary{
-  background:var(--accent);
-  color:#000;
-  border-color:var(--accent);
-}
-.btn-primary:hover{background:#f0b532;transform:translateY(-1px)}
-.btn-secondary{
-  background:transparent;
-  color:var(--text);
-  border-color:var(--border2);
-}
-.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
-.btn-danger{
-  background:transparent;
-  color:var(--red);
-  border-color:var(--red);
-}
-.btn-danger:hover{background:var(--red);color:#fff}
-.btn-green{
-  background:var(--green);
-  color:#000;
-}
-.btn-green:hover{opacity:.85}
-.btn-sm{padding:.35rem .75rem;font-size:.7rem}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-
-/* ── TABLE INPUT ── */
-.table-wrap{overflow-x:auto;max-height:420px;overflow-y:auto}
-table{width:100%;border-collapse:collapse;font-size:.75rem}
-thead{position:sticky;top:0;z-index:10}
-th{
-  background:var(--surface3);
-  border:1px solid var(--border);
-  padding:.5rem .65rem;
-  text-align:center;
-  font-size:.65rem;
-  letter-spacing:.07em;
-  text-transform:uppercase;
-  color:var(--muted);
-  white-space:nowrap;
-}
-td{
-  border:1px solid var(--border);
-  padding:.2rem .3rem;
-}
-tr:hover td{background:rgba(245,166,35,.04)}
-td input{
-  background:transparent;
-  border:none;
-  color:var(--text);
-  font-size:.78rem;
-  padding:.25rem .4rem;
-  border-radius:3px;
-  width:100%;
-  text-align:right;
-}
-td input:focus{background:var(--surface3);outline:1px solid var(--accent)}
-.col-year{color:var(--accent);font-weight:700;text-align:center;min-width:40px}
-.col-del{text-align:center;min-width:32px}
-.del-btn{
-  background:none;border:none;color:var(--red);cursor:pointer;
-  font-size:1rem;opacity:.5;transition:opacity .15s;padding:.2rem;
-}
-.del-btn:hover{opacity:1}
-
-/* ── RESULTS ── */
-.indicators-grid{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:1rem;
-  margin-bottom:1.5rem;
-}
-@media(max-width:900px){.indicators-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:600px){.indicators-grid{grid-template-columns:repeat(2,1fr)}}
-
-.kpi{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:1rem;
-  text-align:center;
-  transition:border-color .2s;
-}
-.kpi:hover{border-color:var(--accent)}
-.kpi-label{
-  font-size:.6rem;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin-bottom:.5rem;
-}
-.kpi-value{
-  font-family:var(--sans);
-  font-size:1.4rem;
-  font-weight:800;
-  color:var(--accent);
-  line-height:1.1;
-}
-.kpi-sub{font-size:.65rem;color:var(--muted);margin-top:.2rem}
-.kpi.feasible{border-color:var(--green)}
-.kpi.not-feasible{border-color:var(--red)}
-
-.verdict{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:1rem 1.5rem;
-  margin-bottom:1.5rem;
-  display:flex;align-items:center;gap:1rem;
-  font-family:var(--sans);
-  font-size:.95rem;
-  font-weight:700;
-}
-.verdict.go{border-color:var(--green);color:var(--green)}
-.verdict.nogo{border-color:var(--red);color:var(--red)}
-.verdict-icon{font-size:1.5rem}
-
-/* ── RESULT TABLE ── */
-.result-table-wrap{overflow-x:auto}
-.result-table{
-  width:100%;border-collapse:collapse;font-size:.72rem;
-  white-space:nowrap;
-}
-.result-table th{
-  background:var(--surface3);
-  border:1px solid var(--border);
-  padding:.5rem .75rem;
-  text-align:right;
-  font-size:.62rem;
-  letter-spacing:.07em;
-  text-transform:uppercase;
-  color:var(--muted);
-}
-.result-table th:first-child{text-align:center}
-.result-table td{
-  border:1px solid var(--border);
-  padding:.45rem .75rem;
-  text-align:right;
-  transition:background .1s;
-}
-.result-table td:first-child{text-align:center;color:var(--accent);font-weight:700}
-.result-table tr:hover td{background:rgba(245,166,35,.05)}
-.result-table tfoot td{
-  background:var(--surface2);
-  font-weight:700;
-  color:var(--accent);
-  border-top:2px solid var(--accent);
-}
-.neg{color:var(--red)}
-.pos{color:var(--green)}
-
-/* ── TABS ── */
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
-.tab{
-  padding:.6rem 1.2rem;
-  font-size:.72rem;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  color:var(--muted);
-  cursor:pointer;
-  border-bottom:2px solid transparent;
-  transition:all .15s;
-  margin-bottom:-1px;
-}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.tab-content{display:none}
-.tab-content.active{display:block}
-
-/* ── CHART ── */
-#chart-wrap{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:1.5rem;
-  margin-bottom:1.5rem;
-}
-canvas{width:100%!important;max-height:300px}
-
-/* ── MISC ── */
-.divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
-.badge{
-  display:inline-block;padding:.2rem .5rem;border-radius:3px;
-  font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-}
-.badge-orange{background:rgba(245,166,35,.15);color:var(--accent);border:1px solid rgba(245,166,35,.3)}
-.badge-blue{background:rgba(56,189,248,.15);color:var(--blue);border:1px solid rgba(56,189,248,.3)}
-
-.upload-zone{
-  border:2px dashed var(--border2);
-  border-radius:6px;
-  padding:1.5rem;
-  text-align:center;
-  cursor:pointer;
-  transition:border-color .15s;
-  color:var(--muted);
-  font-size:.75rem;
-}
-.upload-zone:hover{border-color:var(--accent);color:var(--accent)}
-
-.loading{
-  display:none;
-  position:fixed;inset:0;
-  background:rgba(10,12,15,.8);
-  z-index:999;
-  align-items:center;justify-content:center;
-  flex-direction:column;gap:1rem;
-  font-family:var(--sans);
-  font-size:1rem;
-  color:var(--accent);
-}
-.loading.show{display:flex}
-.spinner{
-  width:40px;height:40px;
-  border:3px solid var(--border);
-  border-top-color:var(--accent);
-  border-radius:50%;
-  animation:spin .7s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.toast{
-  position:fixed;bottom:2rem;right:2rem;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:6px;
-  padding:.75rem 1.25rem;
-  font-size:.78rem;
-  color:var(--text);
-  z-index:200;
-  opacity:0;
-  transform:translateY(1rem);
-  transition:all .25s;
-  pointer-events:none;
-}
-.toast.show{opacity:1;transform:translateY(0)}
-.toast.success{border-color:var(--green);color:var(--green)}
-.toast.error{border-color:var(--red);color:var(--red)}
-
-.section-title{
-  font-family:var(--sans);
-  font-size:.7rem;
-  font-weight:700;
-  letter-spacing:.15em;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin-bottom:1rem;
-  display:flex;align-items:center;gap:.5rem;
-}
-.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
-
-#results-section{display:none}
-.row-controls{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
-</style>
+<link rel="stylesheet" href="/static/style.css"/>
 </head>
 <body>
 
@@ -409,22 +19,77 @@ canvas{width:100%!important;max-height:300px}
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Create Project Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span>✦ Buat Project Baru</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Nama Project</label>
+        <input type="text" id="modal-name" placeholder="Contoh: Lapangan Alpha-1"/>
+      </div>
+      <div class="form-row">
+        <label>Deskripsi (opsional)</label>
+        <input type="text" id="modal-desc" placeholder="Analisis NCF untuk lapangan..."/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="createProject()">
+        + Buat Project
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Header -->
 <header>
-  <div class="logo">
+  <div class="logo" onclick="goToProjects()" style="cursor:pointer">
     ⛽ FM NCF Calculator
-    <span class="logo-badge">v1.0</span>
+    <span class="logo-badge">v2.0</span>
   </div>
-  <div class="header-actions">
-    <a href="/api/template-csv" class="btn btn-secondary btn-sm">⬇ Template CSV</a>
-    <button class="btn btn-green btn-sm" id="btn-export" disabled onclick="exportCSV()">⬇ Export CSV</button>
-  </div>
+  <nav class="nav-links">
+    <a class="nav-link active" id="nav-projects" onclick="goToProjects()">📁 Projects</a>
+    <a href="/api/template-csv" class="nav-link">⬇ Template CSV</a>
+  </nav>
 </header>
 
-<div class="container">
-  <div class="grid-main">
+<!-- ========== PAGE: PROJECT LIST ========== -->
+<div id="page-projects" class="container">
+  <div class="page-hero">
+    <h1 class="page-title">📁 Project Lapangan Migas</h1>
+    <p class="page-subtitle">Kelola semua project perhitungan NCF & indikator ekonomi Anda</p>
+  </div>
 
-    <!-- LEFT PANEL: Parameters -->
+  <div id="projects-grid" class="projects-grid">
+    <!-- populated by JS -->
+  </div>
+  <div id="empty-state" class="empty-state" style="display:none">
+    <div style="font-size:3rem;margin-bottom:1rem;opacity:.5">📂</div>
+    <div style="font-size:1rem;font-family:var(--sans);font-weight:700;margin-bottom:.5rem">Belum ada project</div>
+    <div style="color:var(--muted);font-size:.8rem;margin-bottom:1.5rem">Buat project pertama Anda untuk mulai menghitung</div>
+    <button class="btn btn-primary" onclick="openModal()">+ Buat Project Baru</button>
+  </div>
+</div>
+
+<!-- ========== PAGE: PROJECT DETAIL (Calculator) ========== -->
+<div id="page-detail" class="container" style="display:none">
+
+  <!-- Project Header -->
+  <div class="project-header">
+    <button class="btn btn-secondary btn-sm" onclick="goToProjects()">← Kembali</button>
+    <div class="project-info">
+      <h2 id="project-title" class="project-title">Project Name</h2>
+      <span id="project-desc" class="project-desc"></span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-green btn-sm" id="btn-save" onclick="saveProjectData()">💾 Simpan</button>
+      <button class="btn btn-green btn-sm" id="btn-export" disabled onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+  </div>
+
+  <div class="grid-main">
+    <!-- LEFT PANEL -->
     <div>
       <!-- Upload CSV -->
       <div class="panel" style="margin-bottom:1rem">
@@ -443,7 +108,6 @@ canvas{width:100%!important;max-height:300px}
       <div class="panel">
         <div class="panel-header"><span class="dot"></span> Parameter Perhitungan</div>
         <div class="panel-body">
-
           <div class="form-row">
             <label>Metode Depresiasi</label>
             <select id="depr-method">
@@ -454,12 +118,10 @@ canvas{width:100%!important;max-height:300px}
               <option value="sum_of_year">Sum of the Year Digits</option>
             </select>
           </div>
-
           <div class="form-row" id="reserve-row" style="display:none">
             <label>Total Cadangan (MBbl) — untuk Unit of Production</label>
             <input type="number" id="reserve-mbbl" value="4180" min="0" step="1"/>
           </div>
-
           <div class="form-grid">
             <div class="form-row">
               <label>Tax Rate (%)</label>
@@ -470,16 +132,13 @@ canvas{width:100%!important;max-height:300px}
               <input type="number" id="discount-rate" value="15" min="0" max="100" step="0.1"/>
             </div>
           </div>
-
           <div class="form-row">
             <label style="display:flex;align-items:center;gap:.5rem;text-transform:none;letter-spacing:0;font-size:.78rem;cursor:pointer">
               <input type="checkbox" id="use-lcf" style="width:auto"/>
               <span>Gunakan Loss Carry Forward (LCF)</span>
             </label>
           </div>
-
           <hr class="divider"/>
-
           <button class="btn btn-primary" style="width:100%" onclick="runCalculation()">
             ▶ Hitung NCF &amp; Indikator Ekonomi
           </button>
@@ -487,7 +146,7 @@ canvas{width:100%!important;max-height:300px}
       </div>
     </div>
 
-    <!-- RIGHT PANEL: Data Input Table -->
+    <!-- RIGHT PANEL: Data Table -->
     <div>
       <div class="panel">
         <div class="panel-header">
@@ -523,69 +182,38 @@ canvas{width:100%!important;max-height:300px}
   </div>
 
   <!-- RESULTS SECTION -->
-  <div id="results-section" style="margin-top:1.5rem">
-
-    <!-- Verdict -->
+  <div id="results-section" style="display:none;margin-top:1.5rem">
     <div id="verdict-box" class="verdict">
       <span class="verdict-icon" id="verdict-icon"></span>
       <span id="verdict-text"></span>
     </div>
-
-    <!-- KPIs -->
     <div class="indicators-grid" id="kpi-grid"></div>
-
-    <!-- Tabs -->
     <div class="tabs">
       <div class="tab active" onclick="switchTab('tab-cashflow',this)">Tabel Cash Flow</div>
       <div class="tab" onclick="switchTab('tab-chart',this)">Grafik NCF</div>
       <div class="tab" onclick="switchTab('tab-depr',this)">Jadwal Depresiasi</div>
     </div>
-
-    <!-- Tab: Cash Flow Table -->
     <div class="tab-content active" id="tab-cashflow">
       <div class="result-table-wrap">
         <table class="result-table" id="result-table">
-          <thead>
-            <tr>
-              <th>Thn</th>
-              <th>Produksi (MBbl)</th>
-              <th>Income ($)</th>
-              <th>Capital ($)</th>
-              <th>Non-Cap ($)</th>
-              <th>Opex ($)</th>
-              <th>Depresiasi ($)</th>
-              <th>Taxable Inc ($)</th>
-              <th>Tax ($)</th>
-              <th>NCF Undiscounted ($)</th>
-              <th>Disc. Factor</th>
-              <th>NCF Discounted ($)</th>
-              <th>Kum. NCF ($)</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Thn</th><th>Produksi (MBbl)</th><th>Income ($)</th><th>Capital ($)</th>
+            <th>Non-Cap ($)</th><th>Opex ($)</th><th>Depresiasi ($)</th><th>Taxable Inc ($)</th>
+            <th>Tax ($)</th><th>NCF Undiscounted ($)</th><th>Disc. Factor</th>
+            <th>NCF Discounted ($)</th><th>Kum. NCF ($)</th>
+          </tr></thead>
           <tbody id="result-tbody"></tbody>
           <tfoot id="result-tfoot"></tfoot>
         </table>
       </div>
     </div>
-
-    <!-- Tab: Chart -->
     <div class="tab-content" id="tab-chart">
-      <div id="chart-wrap">
-        <canvas id="ncf-chart"></canvas>
-      </div>
+      <div id="chart-wrap"><canvas id="ncf-chart"></canvas></div>
     </div>
-
-    <!-- Tab: Depreciation Schedule -->
     <div class="tab-content" id="tab-depr">
       <div class="result-table-wrap">
         <table class="result-table" id="depr-table">
-          <thead>
-            <tr>
-              <th>Tahun ke-</th>
-              <th>Depresiasi ($)</th>
-              <th>Kumulatif Depresiasi ($)</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Tahun ke-</th><th>Depresiasi ($)</th><th>Kumulatif Depresiasi ($)</th></tr></thead>
           <tbody id="depr-tbody"></tbody>
         </table>
       </div>
@@ -595,381 +223,6 @@ canvas{width:100%!important;max-height:300px}
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script>
-// ── State ────────────────────────────────────────────────────────────────────
-let rows = [];
-let lastResult = null;
-let ncfChart = null;
-let rowIdCounter = 0;
-
-// ── Utility ──────────────────────────────────────────────────────────────────
-const fmt = (n, dec=1) => n == null ? '—' : Number(n).toLocaleString('id-ID', {minimumFractionDigits:dec, maximumFractionDigits:dec});
-const fmtPct = (n) => n == null ? '—' : (Number(n)*100).toFixed(2) + '%';
-const cls = (n) => n < 0 ? 'neg' : (n > 0 ? 'pos' : '');
-
-function showLoading(v){ document.getElementById('loading').classList.toggle('show',v) }
-function showToast(msg, type='success'){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(()=>t.classList.remove('show'), 3000);
-}
-
-// ── Row Management ────────────────────────────────────────────────────────────
-function addRow(data=null){
-  const id = rowIdCounter++;
-  const lastTahun = rows.length ? rows[rows.length-1].tahun : -1;
-  const row = data || { tahun: lastTahun+1, produksi_mbbl:0, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:0 };
-  row._id = id;
-  rows.push(row);
-  renderTable();
-}
-
-function removeRow(id){
-  rows = rows.filter(r=>r._id !== id);
-  renderTable();
-}
-
-function clearAll(){
-  rows = [];
-  renderTable();
-  document.getElementById('results-section').style.display='none';
-}
-
-function getRowValues(id){
-  const row = rows.find(r=>r._id===id);
-  if(!row) return;
-  row.tahun = parseInt(document.getElementById(`r${id}-tahun`).value)||0;
-  row.produksi_mbbl = parseFloat(document.getElementById(`r${id}-prod`).value)||0;
-  row.harga_minyak_usd = parseFloat(document.getElementById(`r${id}-harga`).value)||0;
-  row.capital_usd = parseFloat(document.getElementById(`r${id}-cap`).value)||0;
-  row.non_capital_usd = parseFloat(document.getElementById(`r${id}-ncap`).value)||0;
-  row.opex_usd = parseFloat(document.getElementById(`r${id}-opex`).value)||0;
-}
-
-function collectRows(){
-  rows.forEach(r => getRowValues(r._id));
-}
-
-function renderTable(){
-  const tbody = document.getElementById('input-tbody');
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td class="col-year"><input id="r${r._id}-tahun" type="number" value="${r.tahun}" style="text-align:center;width:50px"/></td>
-      <td><input id="r${r._id}-prod" type="number" value="${r.produksi_mbbl}" step="0.001"/></td>
-      <td><input id="r${r._id}-harga" type="number" value="${r.harga_minyak_usd}" step="0.01"/></td>
-      <td><input id="r${r._id}-cap" type="number" value="${r.capital_usd}" step="0.01"/></td>
-      <td><input id="r${r._id}-ncap" type="number" value="${r.non_capital_usd}" step="0.01"/></td>
-      <td><input id="r${r._id}-opex" type="number" value="${r.opex_usd}" step="0.01"/></td>
-      <td class="col-del"><button class="del-btn" onclick="removeRow(${r._id})" title="Hapus baris">×</button></td>
-    </tr>
-  `).join('');
-  document.getElementById('row-count').textContent = rows.length + ' baris';
-}
-
-// ── Example Data (Soal 1 FM Module) ──────────────────────────────────────────
-function loadExample(){
-  const data = [
-    {tahun:0,  produksi_mbbl:0,   harga_minyak_usd:20, capital_usd:6500, non_capital_usd:3000, opex_usd:0},
-    {tahun:1,  produksi_mbbl:215, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:2,  produksi_mbbl:425, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:3,  produksi_mbbl:740, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:4,  produksi_mbbl:825, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:5,  produksi_mbbl:710, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:6,  produksi_mbbl:525, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:7,  produksi_mbbl:350, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:8,  produksi_mbbl:150, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:9,  produksi_mbbl:130, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:10, produksi_mbbl:110, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-  ];
-  rows = [];
-  data.forEach(d=>addRow(d));
-  showToast('Data contoh Soal 1 FM berhasil dimuat');
-}
-
-// ── CSV Upload ────────────────────────────────────────────────────────────────
-async function uploadCSV(input){
-  const file = input.files[0];
-  if(!file) return;
-  const formData = new FormData();
-  formData.append('file', file);
-  showLoading(true);
-  try {
-    const res = await fetch('/api/upload-csv', {method:'POST', body:formData});
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail || 'Gagal upload');
-    rows = [];
-    data.rows.forEach(r=>addRow(r));
-    showToast(`✓ ${data.count} baris berhasil diimport`);
-  } catch(e){
-    showToast('❌ ' + e.message, 'error');
-  } finally {
-    showLoading(false);
-    input.value='';
-  }
-}
-
-// ── Depr method toggle ────────────────────────────────────────────────────────
-document.getElementById('depr-method').addEventListener('change', function(){
-  document.getElementById('reserve-row').style.display = this.value==='unit_of_production'?'block':'none';
-});
-
-// ── Calculation ───────────────────────────────────────────────────────────────
-async function runCalculation(){
-  collectRows();
-  if(rows.length < 2){
-    showToast('❌ Minimal butuh 2 baris data (tahun 0 + minimal 1 tahun produksi)', 'error');
-    return;
-  }
-  const payload = {
-    rows: rows.map(r=>({
-      tahun: r.tahun,
-      produksi_mbbl: r.produksi_mbbl,
-      harga_minyak_usd: r.harga_minyak_usd,
-      capital_usd: r.capital_usd,
-      non_capital_usd: r.non_capital_usd,
-      opex_usd: r.opex_usd,
-    })),
-    depr_method: document.getElementById('depr-method').value,
-    tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
-    discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
-    use_lcf: document.getElementById('use-lcf').checked,
-    reserve_mbbl: parseFloat(document.getElementById('reserve-mbbl').value)||null,
-  };
-  showLoading(true);
-  try {
-    const res = await fetch('/api/calculate', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail || 'Error');
-    lastResult = data;
-    renderResults(data);
-    document.getElementById('btn-export').disabled = false;
-    showToast('✓ Perhitungan selesai');
-  } catch(e){
-    showToast('❌ ' + e.message, 'error');
-  } finally {
-    showLoading(false);
-  }
-}
-
-// ── Render Results ────────────────────────────────────────────────────────────
-function renderResults(data){
-  const sec = document.getElementById('results-section');
-  sec.style.display='block';
-  sec.scrollIntoView({behavior:'smooth', block:'start'});
-
-  const ind = data.indicators;
-  const params = data.params;
-  const methodNames = {
-    straight_line:'Straight Line', declining_balance:'Declining Balance',
-    double_declining:'Double Declining', unit_of_production:'Unit of Production',
-    sum_of_year:'Sum of Year'
-  };
-
-  // Verdict
-  const vbox = document.getElementById('verdict-box');
-  const feasible = ind.feasible;
-  vbox.className = 'verdict ' + (feasible?'go':'nogo');
-  document.getElementById('verdict-icon').textContent = feasible ? '✅' : '❌';
-  document.getElementById('verdict-text').textContent = feasible
-    ? `Lapangan LAYAK dikembangkan (NPV > 0) — Metode: ${methodNames[params.depr_method]}, Tax: ${(params.tax_rate*100).toFixed(0)}%, r: ${(params.discount_rate*100).toFixed(0)}%`
-    : `Lapangan TIDAK LAYAK dikembangkan (NPV ≤ 0) — Metode: ${methodNames[params.depr_method]}, Tax: ${(params.tax_rate*100).toFixed(0)}%, r: ${(params.discount_rate*100).toFixed(0)}%`;
-
-  // KPIs
-  const rorVal = ind.ROR != null ? (ind.ROR*100).toFixed(2)+'%' : 'N/A';
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi"><div class="kpi-label">POT</div><div class="kpi-value" style="font-size:1rem">${ind.POT_str||'—'}</div><div class="kpi-sub">Pay Out Time</div></div>
-    <div class="kpi ${feasible?'feasible':'not-feasible'}"><div class="kpi-label">NPV</div><div class="kpi-value" style="color:${feasible?'var(--green)':'var(--red)'}">${fmt(ind.NPV,1)}</div><div class="kpi-sub">r = ${(params.discount_rate*100).toFixed(0)}% | $</div></div>
-    <div class="kpi"><div class="kpi-label">ROR / IRR</div><div class="kpi-value">${rorVal}</div><div class="kpi-sub">Rate of Return</div></div>
-    <div class="kpi"><div class="kpi-label">DPR</div><div class="kpi-value">${fmt(ind.DPR,4)}</div><div class="kpi-sub">Discounted P/I Ratio</div></div>
-    <div class="kpi"><div class="kpi-label">PIR</div><div class="kpi-value">${fmt(ind.PIR,4)}</div><div class="kpi-sub">Profit/Investment Ratio</div></div>
-  `;
-
-  // Cash flow table
-  const tbody = document.getElementById('result-tbody');
-  let sumIncome=0,sumOpex=0,sumDepr=0,sumTaxInc=0,sumTax=0,sumNCF=0,sumDisc=0;
-  tbody.innerHTML = data.cashflow.map(r=>{
-    sumIncome+=r.income||0; sumOpex+=r.opex||0; sumDepr+=r.depresiasi||0;
-    sumTaxInc+=r.taxable_income||0; sumTax+=r.tax||0;
-    sumNCF+=r.ncf_undiscounted; sumDisc+=(r.ncf_discounted||0);
-    return `<tr>
-      <td>${r.tahun}</td>
-      <td>${fmt(r.produksi,1)}</td>
-      <td class="${cls(r.income)}">${fmt(r.income,1)}</td>
-      <td class="${cls(-r.capital)}">${r.capital>0?'('+fmt(r.capital,1)+')':'—'}</td>
-      <td class="${cls(-r.non_capital)}">${r.non_capital>0?'('+fmt(r.non_capital,1)+')':'—'}</td>
-      <td class="${cls(-r.opex)}">${r.opex>0?'('+fmt(r.opex,1)+')':'—'}</td>
-      <td>${r.depresiasi>0?fmt(r.depresiasi,1):'—'}</td>
-      <td class="${cls(r.taxable_income)}">${fmt(r.taxable_income,1)}</td>
-      <td>${r.tax>0?'('+fmt(r.tax,1)+')':'—'}</td>
-      <td class="${cls(r.ncf_undiscounted)} " style="font-weight:700">${fmt(r.ncf_undiscounted,1)}</td>
-      <td style="color:var(--muted)">${fmt(r.discount_factor,4)}</td>
-      <td class="${cls(r.ncf_discounted)}">${fmt(r.ncf_discounted,1)}</td>
-      <td class="${cls(r.cumulative_ncf)}">${fmt(r.cumulative_ncf,1)}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('result-tfoot').innerHTML = `<tr>
-    <td>TOTAL</td>
-    <td>—</td>
-    <td>${fmt(sumIncome,1)}</td>
-    <td>—</td><td>—</td>
-    <td>(${fmt(sumOpex,1)})</td>
-    <td>${fmt(sumDepr,1)}</td>
-    <td>${fmt(sumTaxInc,1)}</td>
-    <td>(${fmt(sumTax,1)})</td>
-    <td class="${cls(sumNCF)}">${fmt(sumNCF,1)}</td>
-    <td>—</td>
-    <td class="${cls(sumDisc)}">${fmt(sumDisc,1)}</td>
-    <td>—</td>
-  </tr>`;
-
-  // Depreciation schedule
-  let cumDepr = 0;
-  document.getElementById('depr-tbody').innerHTML = data.depreciation_schedule.map((d,i)=>{
-    cumDepr+=d;
-    return `<tr>
-      <td>${i+1}</td>
-      <td>${fmt(d,2)}</td>
-      <td>${fmt(cumDepr,2)}</td>
-    </tr>`;
-  }).join('');
-
-  // Chart
-  renderChart(data.cashflow);
-}
-
-function renderChart(cf){
-  const labels = cf.map(r=>r.tahun===0?'Thn 0':'Thn '+r.tahun);
-  const ncfData = cf.map(r=>r.ncf_undiscounted);
-  const cumData = cf.map(r=>r.cumulative_ncf);
-  const discData = cf.map(r=>r.ncf_discounted||0);
-
-  if(ncfChart) ncfChart.destroy();
-  const ctx = document.getElementById('ncf-chart').getContext('2d');
-  ncfChart = new Chart(ctx, {
-    data:{
-      labels,
-      datasets:[
-        {
-          type:'bar', label:'NCF Undiscounted ($)',
-          data: ncfData,
-          backgroundColor: ncfData.map(v=>v>=0?'rgba(34,197,94,.7)':'rgba(239,68,68,.7)'),
-          borderColor: ncfData.map(v=>v>=0?'#22c55e':'#ef4444'),
-          borderWidth:1, yAxisID:'y',
-        },
-        {
-          type:'line', label:'Kumulatif NCF ($)',
-          data: cumData,
-          borderColor:'#f5a623',
-          backgroundColor:'rgba(245,166,35,.1)',
-          borderWidth:2, fill:true,
-          tension:.3, pointRadius:4,
-          pointBackgroundColor:'#f5a623',
-          yAxisID:'y',
-        },
-        {
-          type:'line', label:'NCF Discounted ($)',
-          data: discData,
-          borderColor:'#38bdf8',
-          borderWidth:1.5, borderDash:[4,3],
-          pointRadius:3,
-          pointBackgroundColor:'#38bdf8',
-          fill:false, tension:.3,
-          yAxisID:'y',
-        }
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:true,
-      plugins:{
-        legend:{
-          labels:{ color:'#e8ecf0', font:{family:'Space Mono',size:11} }
-        },
-        tooltip:{
-          backgroundColor:'#181c22',
-          borderColor:'#2a313c',
-          borderWidth:1,
-          titleColor:'#f5a623',
-          bodyColor:'#e8ecf0',
-          callbacks:{
-            label(ctx){ return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID',{minimumFractionDigits:1})}` }
-          }
-        }
-      },
-      scales:{
-        x:{
-          ticks:{color:'#7a8799', font:{family:'Space Mono', size:10}},
-          grid:{color:'#2a313c'}
-        },
-        y:{
-          ticks:{color:'#7a8799', font:{family:'Space Mono', size:10},
-            callback:v=>v.toLocaleString('id-ID',{maximumFractionDigits:0})
-          },
-          grid:{color:'#2a313c'}
-        }
-      }
-    }
-  });
-}
-
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-function switchTab(id, el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById(id).classList.add('active');
-}
-
-// ── Export CSV ────────────────────────────────────────────────────────────────
-async function exportCSV(){
-  if(!lastResult) return;
-  collectRows();
-  const payload = {
-    rows: rows.map(r=>({
-      tahun: r.tahun, produksi_mbbl: r.produksi_mbbl,
-      harga_minyak_usd: r.harga_minyak_usd, capital_usd: r.capital_usd,
-      non_capital_usd: r.non_capital_usd, opex_usd: r.opex_usd,
-    })),
-    depr_method: document.getElementById('depr-method').value,
-    tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
-    discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
-    use_lcf: document.getElementById('use-lcf').checked,
-    reserve_mbbl: parseFloat(document.getElementById('reserve-mbbl').value)||null,
-  };
-  const res = await fetch('/api/export-csv',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  const blob = await res.blob();
-  const a = document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='fm_ncf_result.csv';
-  a.click();
-  showToast('✓ File CSV berhasil didownload');
-}
-
-// ── Drag & Drop ───────────────────────────────────────────────────────────────
-const uploadZone = document.getElementById('upload-zone');
-uploadZone.addEventListener('dragover', e=>{e.preventDefault();uploadZone.style.borderColor='var(--accent)'});
-uploadZone.addEventListener('dragleave', ()=>uploadZone.style.borderColor='');
-uploadZone.addEventListener('drop', e=>{
-  e.preventDefault();
-  uploadZone.style.borderColor='';
-  const file = e.dataTransfer.files[0];
-  if(file){
-    const input = document.getElementById('file-input');
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    input.files = dt.files;
-    uploadCSV(input);
-  }
-});
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-loadExample();
-</script>
+<script src="/static/app.js"></script>
 </body>
 </html>

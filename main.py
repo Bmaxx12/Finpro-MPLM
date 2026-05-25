@@ -6,7 +6,9 @@ import io
 import csv
 import json
 import math
+import uuid
 from pathlib import Path
+from datetime import datetime
 from typing import Optional, List
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -18,8 +20,9 @@ from core.cashflow import compute_cashflow
 from core.indicators import compute_all_indicators, discounted_ncf
 
 BASE_DIR = Path(__file__).parent
+PROJECTS_FILE = BASE_DIR / "data" / "projects.json"
 
-app = FastAPI(title="FM NCF Calculator", version="1.0.0")
+app = FastAPI(title="FM NCF Calculator", version="2.0.0")
 
 
 # ─── Pydantic Models ─────────────────────────────────────────────────────────
@@ -40,6 +43,44 @@ class CalcRequest(BaseModel):
     discount_rate: float = 0.15
     use_lcf: bool = False
     reserve_mbbl: Optional[float] = None  # required for unit_of_production
+
+
+class ProjectCreate(BaseModel):
+    name: str
+    description: str = ""
+
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    rows: Optional[List[dict]] = None
+    params: Optional[dict] = None
+
+
+# ─── Project Storage ─────────────────────────────────────────────────────────
+
+def _ensure_data_dir():
+    PROJECTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if not PROJECTS_FILE.exists():
+        PROJECTS_FILE.write_text("[]", encoding="utf-8")
+
+
+def _load_projects() -> list:
+    _ensure_data_dir()
+    return json.loads(PROJECTS_FILE.read_text(encoding="utf-8"))
+
+
+def _save_projects(projects: list):
+    _ensure_data_dir()
+    PROJECTS_FILE.write_text(json.dumps(projects, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _find_project(project_id: str) -> tuple:
+    projects = _load_projects()
+    for i, p in enumerate(projects):
+        if p["id"] == project_id:
+            return projects, i
+    raise HTTPException(status_code=404, detail="Project tidak ditemukan")
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -114,13 +155,180 @@ def run_calculation(req: CalcRequest) -> dict:
     }
 
 
-# ─── Routes ──────────────────────────────────────────────────────────────────
+# ─── Page Routes ─────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
     with open(BASE_DIR / "static" / "index.html", "r", encoding="utf-8") as f:
         return f.read()
 
+
+# ─── Project API Routes ─────────────────────────────────────────────────────
+
+@app.get("/api/projects")
+async def list_projects():
+    """List all projects."""
+    projects = _load_projects()
+    # Return summary info (no full data)
+    return JSONResponse(content=[{
+        "id": p["id"],
+        "name": p["name"],
+        "description": p.get("description", ""),
+        "created_at": p["created_at"],
+        "updated_at": p.get("updated_at", p["created_at"]),
+        "has_results": p.get("last_result") is not None,
+        "row_count": len(p.get("rows", [])),
+    } for p in projects])
+
+
+@app.post("/api/projects")
+async def create_project(req: ProjectCreate):
+    """Create a new project."""
+    projects = _load_projects()
+    now = datetime.now().isoformat()
+    project = {
+        "id": str(uuid.uuid4())[:8],
+        "name": req.name,
+        "description": req.description,
+        "created_at": now,
+        "updated_at": now,
+        "rows": [],
+        "params": {
+            "depr_method": "declining_balance",
+            "tax_rate": 0.52,
+            "discount_rate": 0.15,
+            "use_lcf": False,
+            "reserve_mbbl": None,
+        },
+        "last_result": None,
+    }
+    projects.append(project)
+    _save_projects(projects)
+    return JSONResponse(content={"id": project["id"], "message": "Project berhasil dibuat"})
+
+
+@app.get("/api/projects/{project_id}")
+async def get_project(project_id: str):
+    """Get full project data."""
+    projects, idx = _find_project(project_id)
+    return JSONResponse(content=projects[idx])
+
+
+@app.put("/api/projects/{project_id}")
+async def update_project(project_id: str, req: ProjectUpdate):
+    """Update project metadata and/or data."""
+    projects, idx = _find_project(project_id)
+    p = projects[idx]
+    if req.name is not None:
+        p["name"] = req.name
+    if req.description is not None:
+        p["description"] = req.description
+    if req.rows is not None:
+        p["rows"] = req.rows
+    if req.params is not None:
+        p["params"].update(req.params)
+    p["updated_at"] = datetime.now().isoformat()
+    _save_projects(projects)
+    return JSONResponse(content={"message": "Project berhasil diupdate"})
+
+
+@app.delete("/api/projects/{project_id}")
+async def delete_project(project_id: str):
+    """Delete a project."""
+    projects, idx = _find_project(project_id)
+    projects.pop(idx)
+    _save_projects(projects)
+    return JSONResponse(content={"message": "Project berhasil dihapus"})
+
+
+@app.post("/api/projects/{project_id}/calculate")
+async def calculate_project(project_id: str):
+    """Run calculation for a project using its stored data."""
+    projects, idx = _find_project(project_id)
+    p = projects[idx]
+    if not p.get("rows") or len(p["rows"]) < 2:
+        raise HTTPException(status_code=400, detail="Minimal butuh 2 baris data")
+
+    year_rows = [YearRow(**r) for r in p["rows"]]
+    params = p.get("params", {})
+    calc_req = CalcRequest(
+        rows=year_rows,
+        depr_method=params.get("depr_method", "declining_balance"),
+        tax_rate=params.get("tax_rate", 0.52),
+        discount_rate=params.get("discount_rate", 0.15),
+        use_lcf=params.get("use_lcf", False),
+        reserve_mbbl=params.get("reserve_mbbl"),
+    )
+    try:
+        result = run_calculation(calc_req)
+        p["last_result"] = result
+        p["updated_at"] = datetime.now().isoformat()
+        _save_projects(projects)
+        return JSONResponse(content=result)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/projects/{project_id}/export-csv")
+async def export_project_csv(project_id: str):
+    """Export project results as CSV."""
+    projects, idx = _find_project(project_id)
+    p = projects[idx]
+
+    if not p.get("rows") or len(p["rows"]) < 2:
+        raise HTTPException(status_code=400, detail="Tidak ada data untuk diexport")
+
+    year_rows = [YearRow(**r) for r in p["rows"]]
+    params = p.get("params", {})
+    calc_req = CalcRequest(
+        rows=year_rows,
+        depr_method=params.get("depr_method", "declining_balance"),
+        tax_rate=params.get("tax_rate", 0.52),
+        discount_rate=params.get("discount_rate", 0.15),
+        use_lcf=params.get("use_lcf", False),
+        reserve_mbbl=params.get("reserve_mbbl"),
+    )
+    result = run_calculation(calc_req)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Tahun", "Produksi (MBbl)", "Harga Minyak ($/bbl)",
+        "Capital ($)", "Non-Capital ($)", "Opex ($)",
+        "Income ($)", "Depresiasi ($)", "Taxable Income ($)",
+        "Tax ($)", "NCF Undiscounted ($)", "Discount Factor",
+        "NCF Discounted ($)", "Cumulative NCF ($)"
+    ])
+    for row in result["cashflow"]:
+        writer.writerow([
+            row["tahun"], row["produksi"], row["harga_minyak"],
+            row["capital"], row["non_capital"], row["opex"],
+            round(row["income"], 2), round(row["depresiasi"], 2),
+            round(row["taxable_income"], 2), round(row["tax"], 2),
+            round(row["ncf_undiscounted"], 2),
+            round(row.get("discount_factor", 1.0), 5),
+            round(row.get("ncf_discounted", 0), 2),
+            round(row["cumulative_ncf"], 2)
+        ])
+    writer.writerow([])
+    writer.writerow(["INDIKATOR EKONOMI"])
+    ind = result["indicators"]
+    writer.writerow(["POT", ind.get("POT_str", "-")])
+    writer.writerow(["NPV", f"{ind.get('NPV', 0):.2f}"])
+    writer.writerow(["ROR", f"{(ind.get('ROR') or 0)*100:.3f}%"])
+    writer.writerow(["DPR", f"{ind.get('DPR', 0):.4f}"])
+    writer.writerow(["PIR", f"{ind.get('PIR', 0):.4f}"])
+
+    safe_name = p["name"].replace(" ", "_").lower()
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={safe_name}_ncf.csv"}
+    )
+
+
+# ─── Original API Routes ────────────────────────────────────────────────────
 
 @app.post("/api/calculate")
 async def calculate(req: CalcRequest):
@@ -226,6 +434,9 @@ async def get_template():
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=template_fm.csv"}
     )
+
+
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 
 if __name__ == "__main__":
