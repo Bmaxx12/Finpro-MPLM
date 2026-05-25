@@ -4,7 +4,7 @@
     "name": "Lapangan Bola",
     "description": "Lapangan bola",
     "created_at": "2026-05-25T15:17:36.132818",
-    "updated_at": "2026-05-25T21:43:03.832748",
+    "updated_at": "2026-05-25T23:01:52.035182",
     "rows": [
       {
         "tahun": 0,
@@ -554,5 +554,22 @@
         "use_lcf": true
       }
     }
+  },
+  {
+    "id": "674958a1",
+    "name": "Test Project",
+    "description": "Test Desc",
+    "created_at": "2026-05-25T22:54:19.096398",
+    "updated_at": "2026-05-25T22:54:19.096398",
+    "rows": [],
+    "params": {
+      "depr_method": "declining_balance",
+      "depr_life": 10,
+      "tax_rate": 0.52,
+      "discount_rate": 0.15,
+      "use_lcf": false,
+      "reserve_mbbl": null
+    },
+    "last_result": null
   }
 ]

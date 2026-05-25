@@ -5,9 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>FM NCF Calculator — Lapangan Migas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="/static/style.css"/>
+<link rel="stylesheet" href="/static/layout.css"/>
 </head>
 <body>
+
+<!-- Animated background blobs -->
+<div class="blob-wrapper">
+  <div class="blob blob-purple"></div>
+  <div class="blob blob-blue"></div>
+  <div class="blob blob-pink"></div>
+</div>
+
 
 <!-- Loading overlay -->
 <div class="loading" id="loading">
@@ -22,7 +34,7 @@
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <span>✦ Buat Project Baru</span>
+      <span>Buat Project Baru</span>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
@@ -35,58 +47,126 @@
         <input type="text" id="modal-desc" placeholder="Analisis NCF untuk lapangan..."/>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="createProject()">
-        + Buat Project
+        <i data-lucide="plus" class="btn-icon"></i> Buat Project
       </button>
     </div>
   </div>
 </div>
 
-<!-- Header -->
-<header>
-  <div class="logo" onclick="goToProjects()" style="cursor:pointer">
-    ⛽ FM NCF Calculator
-    <span class="logo-badge">v2.0</span>
-  </div>
-  <div class="header-actions">
-    <nav class="nav-links">
-      <a class="nav-link active" id="nav-projects" onclick="goToProjects()">📁 Projects</a>
-      <a href="/api/template-csv" class="nav-link">⬇ Template CSV</a>
-    </nav>
-    <button id="theme-toggle" class="theme-btn" title="Ganti Tema">☀️</button>
-  </div>
-</header>
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo" onclick="goToProjects()" style="cursor:pointer">
+        <i data-lucide="droplet" class="logo-icon"></i>
+        <span>FM NCF</span>
+        <span class="logo-badge">v2.0</span>
+      </div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-label">Menu Utama</div>
+      <nav class="sidebar-nav">
+        <a class="nav-link active" id="nav-projects" onclick="goToProjects()">
+          <i data-lucide="layout-dashboard" class="nav-icon"></i> <span class="nav-text">Dashboard</span>
+        </a>
+        <a href="/api/template-csv" class="nav-link">
+          <i data-lucide="file-down" class="nav-icon"></i> <span class="nav-text">Template CSV</span>
+        </a>
+        <a href="#" class="nav-link">
+          <i data-lucide="pie-chart" class="nav-icon"></i> <span class="nav-text">Analytics</span>
+        </a>
+        <a href="#" class="nav-link">
+          <i data-lucide="history" class="nav-icon"></i> <span class="nav-text">History</span>
+        </a>
+        <a href="#" class="nav-link">
+          <i data-lucide="help-circle" class="nav-icon"></i> <span class="nav-text">Bantuan</span>
+        </a>
+      </nav>
+    </div>
 
-<!-- ========== PAGE: PROJECT LIST ========== -->
-<div id="page-projects" class="container">
-  <div class="page-hero">
-    <h1 class="page-title">📁 Project Lapangan Migas</h1>
-    <p class="page-subtitle">Kelola semua project perhitungan NCF & indikator ekonomi Anda</p>
-  </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Pengaturan</div>
+        <button id="theme-toggle" class="sidebar-btn" title="Ganti Tema">
+          <i data-lucide="sun" id="theme-icon"></i> <span class="theme-text">Mode Tema</span>
+        </button>
+      </div>
+    </div>
+  </aside>
 
-  <div id="projects-grid" class="projects-grid">
-    <!-- populated by JS -->
-  </div>
-  <div id="empty-state" class="empty-state" style="display:none">
-    <div style="font-size:3rem;margin-bottom:1rem;opacity:.5">📂</div>
-    <div style="font-size:1rem;font-weight:700;margin-bottom:.5rem">Belum ada project</div>
-    <div style="color:var(--text-dim);font-size:.8rem;margin-bottom:1.5rem">Buat project pertama Anda untuk mulai menghitung</div>
-    <button class="btn btn-primary" onclick="openModal()">+ Buat Project Baru</button>
-  </div>
-</div>
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div style="display:flex; align-items:center; gap: 1.5rem;">
+        <button class="btn btn-secondary btn-sm" onclick="toggleSidebar()" style="padding: 0.5rem;" title="Toggle Sidebar">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="search-box">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="project-search" placeholder="Cari project..." onkeyup="filterProjects()"/>
+        </div>
+      </div>
+      <div class="user-profile">
+        <div class="avatar"><i data-lucide="user"></i></div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: PROJECT LIST ========== -->
+    <div id="page-projects" class="page-container">
+      
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <h1>Kelola Perhitungan Lapangan Migas Anda</h1>
+          <p>Dapatkan insight NPV, IRR, dan POT secara instan dengan visualisasi yang mudah dipahami.</p>
+          <button class="btn btn-primary btn-lg" onclick="openModal()" style="margin-top:1.5rem">
+            Buat Project Baru
+          </button>
+        </div>
+      </div>
+      
+      <div class="dashboard-section-header">
+        <h2 class="section-title">Semua Project</h2>
+        <span id="projects-count" class="badge badge-blue">0</span>
+      </div>
+
+      <div id="projects-grid" class="projects-grid">
+        <!-- populated by JS -->
+      </div>
+      
+      <div id="empty-state" class="empty-state" style="display:none">
+        <div class="empty-icon-wrap">
+          <i data-lucide="folder-open" class="empty-icon"></i>
+        </div>
+        <div class="empty-title">Belum ada project</div>
+        <div class="empty-subtitle">Buat project pertama Anda untuk mulai menghitung</div>
+        <button class="btn btn-primary" onclick="openModal()">
+          <i data-lucide="plus" class="btn-icon"></i> Buat Project Baru
+        </button>
+      </div>
+    </div>
 
 <!-- ========== PAGE: PROJECT DETAIL (Calculator) ========== -->
 <div id="page-detail" class="container" style="display:none">
 
   <!-- Project Header -->
   <div class="project-header">
-    <button class="btn btn-secondary btn-sm" onclick="goToProjects()">← Kembali</button>
+    <button class="btn btn-secondary btn-sm" onclick="goToProjects()">
+      <i data-lucide="arrow-left" class="btn-icon"></i> Kembali
+    </button>
     <div class="project-info">
       <h2 id="project-title" class="project-title">Project Name</h2>
       <span id="project-desc" class="project-desc"></span>
     </div>
     <div class="header-actions">
-      <button class="btn btn-green btn-sm" id="btn-save" onclick="saveProjectData()">💾 Simpan</button>
-      <button class="btn btn-green btn-sm" id="btn-export" disabled onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-green btn-sm" id="btn-save" onclick="saveProjectData()">
+        <i data-lucide="save" class="btn-icon"></i> Simpan
+      </button>
+      <button class="btn btn-green btn-sm" id="btn-export" disabled onclick="exportCSV()">
+        <i data-lucide="download" class="btn-icon"></i> Export CSV
+      </button>
     </div>
   </div>
 
@@ -95,10 +175,12 @@
     <div>
       <!-- Upload CSV -->
       <div class="panel" style="margin-bottom:1rem">
-        <div class="panel-header"><span class="dot"></span> Import Data CSV</div>
+        <div class="panel-header"><i data-lucide="upload" class="panel-icon"></i> Import Data CSV</div>
         <div class="panel-body">
           <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-            <div style="font-size:1.5rem;margin-bottom:.4rem">📁</div>
+            <div class="upload-icon-wrap">
+              <i data-lucide="upload-cloud" class="upload-icon"></i>
+            </div>
             Klik atau drag & drop file CSV di sini<br/>
             <span style="font-size:.65rem;color:var(--text-dim)">Format: tahun, produksi_mbbl, harga_minyak_usd, capital_usd, non_capital_usd, opex_usd</span>
           </div>
@@ -108,7 +190,7 @@
 
       <!-- Parameters -->
       <div class="panel">
-        <div class="panel-header"><span class="dot"></span> Parameter Perhitungan</div>
+        <div class="panel-header"><i data-lucide="sliders" class="panel-icon"></i> Parameter Perhitungan</div>
         <div class="panel-body">
           <div class="form-row">
             <label>Metode Depresiasi</label>
@@ -146,19 +228,19 @@
           </div>
           <hr class="divider"/>
           <button class="btn btn-primary" style="width:100%" onclick="runCalculation()">
-            ▶ Hitung NCF &amp; Indikator Ekonomi
+            <i data-lucide="play" class="btn-icon"></i> Hitung NCF &amp; Indikator Ekonomi
           </button>
         </div>
       </div>
 
       <!-- Proyeksi Produksi (Regresi) -->
       <div class="panel" style="margin-top:1.5rem">
-        <div class="panel-header"><span class="dot" style="background:var(--blue);box-shadow:0 0 12px rgba(56,189,248,0.4)"></span> Proyeksi Produksi (Regresi)</div>
+        <div class="panel-header"><i data-lucide="trending-up" class="panel-icon icon-blue"></i> Proyeksi Produksi (Regresi)</div>
         <div class="panel-body">
           <div class="form-row">
             <label>Metode Regresi</label>
             <select id="reg-method">
-              <option value="expo_peak" selected>Eksponensial Decline (Mulai dari Peak) ★</option>
+              <option value="expo_peak" selected>Eksponensial Decline (Mulai dari Peak)</option>
               <option value="expo_all">Eksponensial (Semua Data)</option>
               <option value="linear_peak">Linear (Mulai dari Peak)</option>
               <option value="linear_all">Linear (Semua Data)</option>
@@ -168,11 +250,11 @@
             <label>Tahun Proyeksi</label>
             <input type="number" id="proj-years" value="20" min="1" max="50" step="1"/>
           </div>
-          <button class="btn btn-secondary" style="width:100%; border-color:var(--blue); color:var(--blue); margin-bottom: 0.5rem;" onclick="applyRegressionProjection()">
-            ⚡ Proyeksikan &amp; Terapkan
+          <button class="btn btn-secondary btn-blue-border" style="width:100%; margin-bottom: 0.5rem;" onclick="applyRegressionProjection()">
+            <i data-lucide="zap" class="btn-icon"></i> Proyeksikan &amp; Terapkan
           </button>
-          <button class="btn btn-secondary" style="width:100%; border-color:var(--amber); color:var(--amber)" onclick="projectProductionLinearRegression()">
-            📈 Proyeksi Regresi Linear ke Tahun 20
+          <button class="btn btn-secondary btn-amber-border" style="width:100%;" onclick="projectProductionLinearRegression()">
+            <i data-lucide="trending-up" class="btn-icon"></i> Proyeksi Regresi Linear ke Tahun 20
           </button>
           <div id="linear-reg-info" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-dim); text-align: center;"></div>
         </div>
@@ -183,15 +265,21 @@
     <div>
       <div class="panel">
         <div class="panel-header">
-          <span class="dot"></span> Data Lapangan
+          <i data-lucide="table" class="panel-icon"></i> Data Lapangan
           <span style="flex:1"></span>
           <span id="row-count" class="badge badge-orange">0 baris</span>
         </div>
         <div class="panel-body">
           <div class="row-controls">
-            <button class="btn btn-secondary btn-sm" onclick="addRow()">+ Tambah Baris</button>
-            <button class="btn btn-secondary btn-sm" onclick="loadExample()">📋 Load Contoh (Soal 1 FM)</button>
-            <button class="btn btn-secondary btn-sm" onclick="clearAll()">🗑 Hapus Semua</button>
+            <button class="btn btn-secondary btn-sm" onclick="addRow()">
+              <i data-lucide="plus" class="btn-icon"></i> Tambah Baris
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="loadExample()">
+              <i data-lucide="clipboard-list" class="btn-icon"></i> Load Contoh (Soal 1 FM)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="clearAll()">
+              <i data-lucide="trash-2" class="btn-icon"></i> Hapus Semua
+            </button>
           </div>
           <div class="table-wrap">
             <table id="input-table">
@@ -256,6 +344,8 @@
       </div>
     </div>
   </div>
+</div>
+  </main>
 </div>
 
 <!-- Chart.js CDN -->

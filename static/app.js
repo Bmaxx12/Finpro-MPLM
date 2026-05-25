@@ -60,7 +60,15 @@ async function loadProjectsList(){
     if(projects.length === 0){
       grid.style.display = 'none';
       empty.style.display = '';
+      if(document.getElementById('projects-count')) {
+        document.getElementById('projects-count').innerText = 0;
+      }
+      lucide.createIcons();
       return;
+    }
+
+    if(document.getElementById('projects-count')) {
+      document.getElementById('projects-count').innerText = projects.length;
     }
 
     grid.style.display = '';
@@ -69,12 +77,14 @@ async function loadProjectsList(){
     grid.innerHTML = projects.map(p => {
       const date = new Date(p.updated_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
       const statusBadge = p.has_results
-        ? '<span class="badge badge-green">✓ Calculated</span>'
+        ? '<span class="badge badge-green">Calculated</span>'
         : '<span class="badge badge-orange">Draft</span>';
       return `
         <div class="project-card" onclick="goToProject('${p.id}')">
           <div class="project-card-actions">
-            <button class="card-action-btn danger" onclick="event.stopPropagation();deleteProject('${p.id}','${p.name.replace(/'/g,"\\'")}')">🗑</button>
+            <button class="card-action-btn danger" onclick="event.stopPropagation();deleteProject('${p.id}')" title="Hapus Project">
+              <i data-lucide="trash-2"></i>
+            </button>
           </div>
           <div class="project-card-name">${escHtml(p.name)}</div>
           <div class="project-card-desc">${escHtml(p.description || 'Tidak ada deskripsi')}</div>
@@ -85,8 +95,10 @@ async function loadProjectsList(){
         </div>
       `;
     }).join('');
+    
+    lucide.createIcons();
   } catch(e){
-    showToast('❌ Gagal memuat projects: ' + e.message, 'error');
+    showToast('Gagal memuat projects: ' + e.message, 'error');
   }
 }
 
@@ -98,7 +110,7 @@ function escHtml(s){
 
 async function createProject(){
   const name = document.getElementById('modal-name').value.trim();
-  if(!name){ showToast('❌ Nama project tidak boleh kosong', 'error'); return; }
+  if(!name){ showToast('Nama project tidak boleh kosong', 'error'); return; }
   const desc = document.getElementById('modal-desc').value.trim();
   try {
     const res = await fetch('/api/projects', {
@@ -109,21 +121,21 @@ async function createProject(){
     const data = await res.json();
     if(!res.ok) throw new Error(data.detail || 'Error');
     closeModal();
-    showToast('✓ Project "' + name + '" berhasil dibuat');
+    showToast('Project "' + name + '" berhasil dibuat');
     goToProject(data.id);
   } catch(e){
-    showToast('❌ ' + e.message, 'error');
+    showToast(e.message, 'error');
   }
 }
 
-async function deleteProject(id, name){
-  if(!confirm(`Hapus project "${name}"?`)) return;
+async function deleteProject(id){
+  if(!confirm('Hapus project ini?')) return;
   try {
     await fetch(`/api/projects/${id}`, {method:'DELETE'});
-    showToast('✓ Project berhasil dihapus');
+    showToast('Project berhasil dihapus');
     loadProjectsList();
   } catch(e){
-    showToast('❌ Gagal menghapus', 'error');
+    showToast('Gagal menghapus: ' + e.message, 'error');
   }
 }
 
@@ -152,6 +164,8 @@ async function loadProjectDetail(id){
     rowIdCounter = 0;
     if(p.rows && p.rows.length > 0){
       p.rows.forEach(r => addRow(r));
+    } else {
+      addRow();
     }
 
     // If has results, render them
@@ -160,8 +174,10 @@ async function loadProjectDetail(id){
       renderResults(p.last_result);
       document.getElementById('btn-export').disabled = false;
     }
+    
+    setTimeout(() => lucide.createIcons(), 50);
   } catch(e){
-    showToast('❌ ' + e.message, 'error');
+    showToast(e.message, 'error');
     goToProjects();
   } finally {
     showLoading(false);
@@ -194,9 +210,9 @@ async function saveProjectData(){
       body: JSON.stringify({rows: saveRows, params})
     });
     if(!res.ok) throw new Error('Gagal menyimpan');
-    showToast('✓ Data project berhasil disimpan');
+    showToast('Data project berhasil disimpan');
   } catch(e){
-    showToast('❌ ' + e.message, 'error');
+    showToast('Error: ' + e.message, 'error');
   }
 }
 
@@ -247,10 +263,15 @@ function renderTable(){
       <td><input id="r${r._id}-cap" type="number" value="${r.capital_usd}" step="0.01"/></td>
       <td><input id="r${r._id}-ncap" type="number" value="${r.non_capital_usd}" step="0.01"/></td>
       <td><input id="r${r._id}-opex" type="number" value="${r.opex_usd}" step="0.01"/></td>
-      <td class="col-del"><button class="del-btn" onclick="removeRow(${r._id})" title="Hapus baris">×</button></td>
+      <td class="col-del">
+        <button class="del-btn" onclick="removeRow(${r._id})" title="Hapus baris">
+          <i data-lucide="x"></i>
+        </button>
+      </td>
     </tr>
   `).join('');
   document.getElementById('row-count').textContent = rows.length + ' baris';
+  lucide.createIcons();
 }
 
 // ── Example Data ─────────────────────────────────────────────────────────────
@@ -287,9 +308,9 @@ async function uploadCSV(input){
     if(!res.ok) throw new Error(data.detail || 'Gagal upload');
     rows = [];
     data.rows.forEach(r=>addRow(r));
-    showToast(`✓ ${data.count} baris berhasil diimport`);
+    showToast(`${data.count} baris berhasil diimport`);
   } catch(e){
-    showToast('❌ ' + e.message, 'error');
+    showToast('Error: ' + e.message, 'error');
   } finally {
     showLoading(false);
     input.value='';
@@ -305,7 +326,7 @@ document.getElementById('depr-method').addEventListener('change', function(){
 async function runCalculation(){
   collectRows();
   if(rows.length < 2){
-    showToast('❌ Minimal butuh 2 baris data (tahun 0 + minimal 1 tahun produksi)', 'error');
+    showToast('Minimal butuh 2 baris data (tahun 0 + minimal 1 tahun produksi)', 'error');
     return;
   }
 
@@ -340,9 +361,9 @@ async function runCalculation(){
     lastResult = data;
     renderResults(data);
     document.getElementById('btn-export').disabled = false;
-    showToast('✓ Perhitungan selesai');
+    showToast('Perhitungan selesai');
   } catch(e){
-    showToast('❌ ' + e.message, 'error');
+    showToast(e.message, 'error');
   } finally {
     showLoading(false);
   }
@@ -366,7 +387,9 @@ function renderResults(data){
   const vbox = document.getElementById('verdict-box');
   const feasible = ind.feasible;
   vbox.className = 'verdict ' + (feasible?'go':'nogo');
-  document.getElementById('verdict-icon').textContent = feasible ? '✅' : '❌';
+  document.getElementById('verdict-icon').innerHTML = feasible 
+    ? '<i data-lucide="check-circle-2"></i>' 
+    : '<i data-lucide="x-circle"></i>';
   document.getElementById('verdict-text').textContent = feasible
     ? `Lapangan LAYAK dikembangkan (NPV > 0) — Metode: ${methodNames[params.depr_method]}, Tax: ${(params.tax_rate*100).toFixed(0)}%, r: ${(params.discount_rate*100).toFixed(0)}%`
     : `Lapangan TIDAK LAYAK dikembangkan (NPV ≤ 0) — Metode: ${methodNames[params.depr_method]}, Tax: ${(params.tax_rate*100).toFixed(0)}%, r: ${(params.discount_rate*100).toFixed(0)}%`;
@@ -424,6 +447,7 @@ function renderResults(data){
   // Chart
   renderChart(data.cashflow);
   renderProdChart(data.cashflow);
+  lucide.createIcons();
 }
 
 function renderChart(cf){
@@ -437,6 +461,10 @@ function renderChart(cf){
   const cText = s.getPropertyValue('--text').trim() || '#f1f5f9';
   const cDim = s.getPropertyValue('--text-dim').trim() || '#94a3b8';
   const cBorder = s.getPropertyValue('--glass-border').trim() || 'rgba(255,255,255,0.1)';
+  const cAccent = s.getPropertyValue('--accent').trim() || '#818cf8';
+  const cAccentGlow = s.getPropertyValue('--accent-glow').trim() || 'rgba(99, 102, 241, 0.2)';
+  const cGreen = s.getPropertyValue('--green').trim() || '#34d399';
+  const cRed = s.getPropertyValue('--red').trim() || '#f43f5e';
 
   if(ncfChart) ncfChart.destroy();
   const ctx = document.getElementById('ncf-chart').getContext('2d');
@@ -447,22 +475,22 @@ function renderChart(cf){
         {
           type:'bar', label:'NCF Undiscounted ($)',
           data: ncfData,
-          backgroundColor: ncfData.map(v=>v>=0?'rgba(52, 211, 153, 0.7)':'rgba(251, 113, 133, 0.7)'),
-          borderColor: ncfData.map(v=>v>=0?'#34d399':'#fb7185'),
-          borderWidth:1, yAxisID:'y', borderRadius: 4,
+          backgroundColor: ncfData.map(v=>v>=0?'rgba(52, 211, 153, 0.45)':'rgba(244, 63, 94, 0.45)'),
+          borderColor: ncfData.map(v=>v>=0?cGreen:cRed),
+          borderWidth:1.5, yAxisID:'y', borderRadius: 6,
         },
         {
           type:'line', label:'Kumulatif NCF ($)',
           data: cumData,
-          borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)',
+          borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.06)',
           borderWidth:2.5, fill:true, tension:.3, pointRadius:4,
           pointBackgroundColor:'#fbbf24', yAxisID:'y',
         },
         {
           type:'line', label:'NCF Discounted ($)',
           data: discData,
-          borderColor:'#a78bfa', borderWidth:2, borderDash:[5,4],
-          pointRadius:3, pointBackgroundColor:'#a78bfa',
+          borderColor:cAccent, borderWidth:2, borderDash:[5,4],
+          pointRadius:3, pointBackgroundColor:cAccent,
           fill:false, tension:.3, yAxisID:'y',
         }
       ]
@@ -470,10 +498,12 @@ function renderChart(cf){
     options:{
       responsive:true, maintainAspectRatio:true,
       plugins:{
-        legend:{ labels:{ color: cText, font:{family:'JetBrains Mono',size:11} } },
+        legend:{ labels:{ color: cText, font:{family:'Outfit', size:12, weight:'600'} } },
         tooltip:{
-          backgroundColor:'rgba(20,16,36,0.9)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
-          titleColor:'#fbbf24', bodyColor: cText, cornerRadius: 8, padding: 10,
+          backgroundColor:'rgba(18, 14, 30, 0.95)', borderColor:cBorder, borderWidth:1,
+          titleColor:'#fbbf24', bodyColor: cText, cornerRadius: 10, padding: 12,
+          titleFont: {family: 'Outfit', size: 12, weight: 'bold'},
+          bodyFont: {family: 'JetBrains Mono', size: 11},
           callbacks:{ label(ctx){ return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID',{minimumFractionDigits:1})}` } }
         }
       },
@@ -551,6 +581,8 @@ function renderProdChart(cf) {
   const cText = s.getPropertyValue('--text').trim() || '#f1f5f9';
   const cDim = s.getPropertyValue('--text-dim').trim() || '#94a3b8';
   const cBorder = s.getPropertyValue('--glass-border').trim() || 'rgba(255,255,255,0.1)';
+  const cAccent = s.getPropertyValue('--accent').trim() || '#818cf8';
+  const cAccentGlow = s.getPropertyValue('--accent-glow').trim() || 'rgba(99, 102, 241, 0.2)';
 
   if (prodChart) prodChart.destroy();
   const ctx = document.getElementById('prod-chart').getContext('2d');
@@ -560,9 +592,9 @@ function renderProdChart(cf) {
       type: 'bar',
       label: 'Produksi Minyak (MBbl)',
       data: prodData,
-      backgroundColor: 'rgba(167, 139, 250, 0.6)',
-      borderColor: '#a78bfa',
-      borderWidth: 1, borderRadius: 4,
+      backgroundColor: cAccentGlow,
+      borderColor: cAccent,
+      borderWidth: 1.5, borderRadius: 6,
       yAxisID: 'y'
     }
   ];
@@ -592,13 +624,15 @@ function renderProdChart(cf) {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: { labels: { color: cText, font: { family: 'JetBrains Mono', size: 11 } } },
+        legend: { labels: { color: cText, font: { family: 'Outfit', size: 12, weight: '600' } } },
         tooltip: {
-          backgroundColor: 'rgba(20,16,36,0.9)',
-          borderColor: 'rgba(255,255,255,0.1)',
-          borderWidth: 1, cornerRadius: 8, padding: 10,
-          titleColor: '#a78bfa',
+          backgroundColor: 'rgba(18, 14, 30, 0.95)',
+          borderColor: cBorder,
+          borderWidth: 1, cornerRadius: 10, padding: 12,
+          titleColor: cAccent,
           bodyColor: cText,
+          titleFont: {family: 'Outfit', size: 12, weight: 'bold'},
+          bodyFont: {family: 'JetBrains Mono', size: 11},
           callbacks: {
             label(ctx) {
               return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID', { minimumFractionDigits: 1 })} MBbl`;
@@ -819,7 +853,7 @@ function projectProductionLinearRegression() {
     isExpo: false
   };
   
-  showToast(`✓ Proyeksi Linear berhasil. Slope: ${slope.toFixed(2)}, Intercept: ${intercept.toFixed(2)}`);
+  showToast(`Proyeksi Linear berhasil. Slope: ${slope.toFixed(2)}, Intercept: ${intercept.toFixed(2)}`);
   runCalculation();
 }
 
@@ -843,7 +877,7 @@ async function exportCSV(){
     a.href = URL.createObjectURL(blob);
     a.download = 'fm_ncf_result.csv';
     a.click();
-    showToast('✓ File CSV berhasil didownload');
+    showToast('File CSV berhasil didownload');
     return;
   }
 
@@ -867,7 +901,7 @@ async function exportCSV(){
   a.href=URL.createObjectURL(blob);
   a.download='fm_ncf_result.csv';
   a.click();
-  showToast('✓ File CSV berhasil didownload');
+  showToast('File CSV berhasil didownload');
 }
 
 // ── Drag & Drop ──────────────────────────────────────────────────────────────
@@ -900,7 +934,12 @@ if (themeToggle) {
   const initial = saved || 'dark';
   
   document.documentElement.setAttribute('data-theme', initial);
-  themeToggle.textContent = initial === 'dark' ? '🌙' : '☀️';
+  
+  const iconEl = document.getElementById('theme-icon');
+  if (iconEl) {
+    iconEl.setAttribute('data-lucide', initial === 'dark' ? 'sun' : 'moon');
+    lucide.createIcons();
+  }
   
   // event klik buat toggle tema
   themeToggle.addEventListener('click', () => {
@@ -909,7 +948,12 @@ if (themeToggle) {
     
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
-    themeToggle.textContent = next === 'dark' ? '🌙' : '☀️';
+    
+    const iconEl = document.getElementById('theme-icon');
+    if (iconEl) {
+      iconEl.setAttribute('data-lucide', next === 'dark' ? 'sun' : 'moon');
+      lucide.createIcons();
+    }
     
     // render ulang chart biar warnanya ikut berubah
     if (ncfChart && lastResult) renderChart(lastResult.cashflow);
@@ -917,3 +961,23 @@ if (themeToggle) {
   });
 }
 
+function filterProjects() {
+  const filter = document.getElementById('project-search').value.toLowerCase();
+  const cards = document.querySelectorAll('#projects-grid .project-card');
+  cards.forEach(card => {
+    const name = card.querySelector('.project-card-name').innerText.toLowerCase();
+    const desc = card.querySelector('.project-card-desc').innerText.toLowerCase();
+    if(name.includes(filter) || desc.includes(filter)) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function toggleSidebar() {
+  const layout = document.querySelector('.app-layout');
+  const sidebar = document.querySelector('.sidebar');
+  if(layout) layout.classList.toggle('collapsed');
+  if(sidebar) sidebar.classList.toggle('collapsed');
+}
