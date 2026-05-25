@@ -2,6 +2,7 @@
 let rows = [];
 let lastResult = null;
 let ncfChart = null;
+let prodChart = null;
 let rowIdCounter = 0;
 let currentProjectId = null;
 
@@ -33,6 +34,7 @@ function goToProject(id){
   document.getElementById('results-section').style.display = 'none';
   document.getElementById('btn-export').disabled = true;
   lastResult = null;
+  window.regressionParams = null;
   loadProjectDetail(id);
 }
 
@@ -213,6 +215,7 @@ function removeRow(id){
 
 function clearAll(){
   rows = [];
+  window.regressionParams = null;
   renderTable();
   document.getElementById('results-section').style.display='none';
 }
@@ -250,6 +253,7 @@ function renderTable(){
 
 // ── Example Data ─────────────────────────────────────────────────────────────
 function loadExample(){
+  window.regressionParams = null;
   const data = [
     {tahun:0,  produksi_mbbl:0,   harga_minyak_usd:20, capital_usd:6500, non_capital_usd:3000, opex_usd:0},
     {tahun:1,  produksi_mbbl:215, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
@@ -416,6 +420,7 @@ function renderResults(data){
 
   // Chart
   renderChart(data.cashflow);
+  renderProdChart(data.cashflow);
 }
 
 function renderChart(cf){
@@ -469,6 +474,263 @@ function renderChart(cf){
       }
     }
   });
+}
+
+function getOrComputeRegressionParams(cf) {
+  if (window.regressionParams) return window.regressionParams;
+  
+  // Fit default expo_peak regression on the fly
+  const points = cf.filter(r => r.tahun > 0 && r.produksi > 0).map(r => ({
+    tahun: r.tahun,
+    produksi_mbbl: r.produksi
+  }));
+  if (points.length < 2) return null;
+  
+  // Find peak
+  let peakRow = points.reduce((max, p) => p.produksi_mbbl > max.produksi_mbbl ? p : max, points[0]);
+  let fitPoints = points.filter(p => p.tahun >= peakRow.tahun);
+  if (fitPoints.length < 2) fitPoints = points;
+  
+  const N = fitPoints.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  fitPoints.forEach(p => {
+    const x = p.tahun;
+    const y = Math.log(p.produksi_mbbl);
+    sumX += x;
+    sumY += y;
+    sumXY += x * y;
+    sumX2 += x * x;
+  });
+  const denom = (N * sumX2 - sumX * sumX);
+  if (Math.abs(denom) < 1e-9) return null;
+  
+  const slope = (N * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / N;
+  
+  return {
+    type: 'expo',
+    slope,
+    intercept,
+    peakYear: peakRow.tahun,
+    isExpo: true
+  };
+}
+
+function renderProdChart(cf) {
+  const labels = cf.map(r => r.tahun === 0 ? 'Thn 0' : 'Thn ' + r.tahun);
+  const prodData = cf.map(r => r.produksi);
+  
+  let regParams = window.regressionParams || getOrComputeRegressionParams(cf);
+  let regData = [];
+  if (regParams) {
+    const { isExpo, slope, intercept, peakYear } = regParams;
+    cf.forEach(r => {
+      if (r.tahun === 0) {
+        regData.push(null);
+      } else if (peakYear > 0 && r.tahun < peakYear) {
+        regData.push(null);
+      } else {
+        let val = isExpo 
+          ? Math.exp(intercept) * Math.exp(slope * r.tahun)
+          : (slope * r.tahun + intercept);
+        regData.push(val < 0 ? 0 : val);
+      }
+    });
+  }
+  
+  if (prodChart) prodChart.destroy();
+  const ctx = document.getElementById('prod-chart').getContext('2d');
+  
+  const datasets = [
+    {
+      type: 'bar',
+      label: 'Produksi Minyak (MBbl)',
+      data: prodData,
+      backgroundColor: 'rgba(56,189,248,0.6)',
+      borderColor: '#38bdf8',
+      borderWidth: 1,
+      yAxisID: 'y'
+    }
+  ];
+  
+  if (regData.length > 0) {
+    datasets.push({
+      type: 'line',
+      label: 'Tren Regresi / Decline Curve (MBbl)',
+      data: regData,
+      borderColor: '#f5a623',
+      borderDash: [5, 5],
+      borderWidth: 2,
+      pointRadius: 4,
+      pointBackgroundColor: '#f5a623',
+      fill: false,
+      tension: 0.1,
+      yAxisID: 'y'
+    });
+  }
+  
+  prodChart = new Chart(ctx, {
+    data: {
+      labels,
+      datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { labels: { color: '#e8ecf0', font: { family: 'Space Mono', size: 11 } } },
+        tooltip: {
+          backgroundColor: '#181c22',
+          borderColor: '#2a313c',
+          borderWidth: 1,
+          titleColor: '#38bdf8',
+          bodyColor: '#e8ecf0',
+          callbacks: {
+            label(ctx) {
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID', { minimumFractionDigits: 1 })} MBbl`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#7a8799', font: { family: 'Space Mono', size: 10 } }, grid: { color: '#2a313c' } },
+        y: { 
+          ticks: { 
+            color: '#7a8799', 
+            font: { family: 'Space Mono', size: 10 },
+            callback: v => v.toLocaleString('id-ID', { maximumFractionDigits: 0 })
+          }, 
+          grid: { color: '#2a313c' } 
+        }
+      }
+    }
+  });
+}
+
+async function applyRegressionProjection() {
+  collectRows();
+  
+  // 1. Find all active production points
+  const points = rows.filter(r => r.tahun > 0 && r.produksi_mbbl > 0);
+  if (points.length < 2) {
+    showToast('❌ Butuh minimal 2 baris data produksi > 0 untuk melakukan regresi', 'error');
+    return;
+  }
+  
+  const method = document.getElementById('reg-method').value;
+  const projYears = parseInt(document.getElementById('proj-years').value) || 20;
+  
+  // 2. Select points to fit
+  let fitPoints = points;
+  let peakYear = 0;
+  if (method.includes('_peak')) {
+    let peakRow = points.reduce((max, p) => p.produksi_mbbl > max.produksi_mbbl ? p : max, points[0]);
+    peakYear = peakRow.tahun;
+    fitPoints = points.filter(p => p.tahun >= peakYear);
+    if (fitPoints.length < 2) {
+      fitPoints = points; // fallback
+      peakYear = 0;
+    }
+  }
+  
+  const N = fitPoints.length;
+  let slope = 0, intercept = 0;
+  let isExpo = method.startsWith('expo');
+  
+  if (isExpo) {
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    fitPoints.forEach(p => {
+      const x = p.tahun;
+      const y = Math.log(p.produksi_mbbl);
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumX2 += x * x;
+    });
+    // Check denom
+    const denom = (N * sumX2 - sumX * sumX);
+    if (Math.abs(denom) < 1e-9) {
+      showToast('❌ Error perhitungan regresi (pembagi nol)', 'error');
+      return;
+    }
+    slope = (N * sumXY - sumX * sumY) / denom;
+    intercept = (sumY - slope * sumX) / N;
+  } else {
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    fitPoints.forEach(p => {
+      const x = p.tahun;
+      const y = p.produksi_mbbl;
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumX2 += x * x;
+    });
+    const denom = (N * sumX2 - sumX * sumX);
+    if (Math.abs(denom) < 1e-9) {
+      showToast('❌ Error perhitungan regresi (pembagi nol)', 'error');
+      return;
+    }
+    slope = (N * sumXY - sumX * sumY) / denom;
+    intercept = (sumY - slope * sumX) / N;
+  }
+  
+  // 3. Get last row parameters to copy forward
+  let maxYear = 0;
+  let lastPrice = 20.0;
+  let lastOpex = 175.0;
+  rows.forEach(r => {
+    if (r.tahun > maxYear) maxYear = r.tahun;
+  });
+  
+  // Let's find the actual last row data
+  const lastRow = rows.find(r => r.tahun === maxYear);
+  if (lastRow) {
+    lastPrice = lastRow.harga_minyak_usd;
+    lastOpex = lastRow.opex_usd;
+  }
+  
+  // 4. Extend the rows array up to projYears
+  let addedCount = 0;
+  for (let y = maxYear + 1; y <= projYears; y++) {
+    // Predict production
+    let predProd = 0;
+    if (isExpo) {
+      predProd = Math.exp(intercept) * Math.exp(slope * y);
+    } else {
+      predProd = Math.max(0, slope * y + intercept);
+    }
+    
+    // Add row
+    const id = rowIdCounter++;
+    rows.push({
+      _id: id,
+      tahun: y,
+      produksi_mbbl: parseFloat(predProd.toFixed(3)),
+      harga_minyak_usd: lastPrice,
+      capital_usd: 0.0,
+      non_capital_usd: 0.0,
+      opex_usd: lastOpex
+    });
+    addedCount++;
+  }
+  
+  // Sort rows by year
+  rows.sort((a, b) => a.tahun - b.tahun);
+  renderTable();
+  
+  // Store the regression params in global state for charting
+  window.regressionParams = {
+    type: isExpo ? 'expo' : 'linear',
+    slope,
+    intercept,
+    peakYear,
+    isExpo
+  };
+  
+  showToast(`✓ Berhasil memproyeksikan data. Ditambahkan ${addedCount} baris baru (Tahun ${maxYear + 1} - ${projYears})`);
+  
+  // Automatically run calculation to update tables & charts!
+  runCalculation();
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────

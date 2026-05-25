@@ -144,6 +144,29 @@
           </button>
         </div>
       </div>
+
+      <!-- Proyeksi Produksi (Regresi) -->
+      <div class="panel" style="margin-top:1.5rem">
+        <div class="panel-header"><span class="dot" style="background:var(--blue)"></span> Proyeksi Produksi (Regresi)</div>
+        <div class="panel-body">
+          <div class="form-row">
+            <label>Metode Regresi</label>
+            <select id="reg-method">
+              <option value="expo_peak" selected>Eksponensial Decline (Mulai dari Peak) ★</option>
+              <option value="expo_all">Eksponensial (Semua Data)</option>
+              <option value="linear_peak">Linear (Mulai dari Peak)</option>
+              <option value="linear_all">Linear (Semua Data)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Tahun Proyeksi</label>
+            <input type="number" id="proj-years" value="20" min="1" max="50" step="1"/>
+          </div>
+          <button class="btn btn-secondary" style="width:100%; border-color:var(--blue); color:var(--blue)" onclick="applyRegressionProjection()">
+            ⚡ Proyeksikan &amp; Terapkan
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- RIGHT PANEL: Data Table -->
@@ -191,6 +214,7 @@
     <div class="tabs">
       <div class="tab active" onclick="switchTab('tab-cashflow',this)">Tabel Cash Flow</div>
       <div class="tab" onclick="switchTab('tab-chart',this)">Grafik NCF</div>
+      <div class="tab" onclick="switchTab('tab-prod-chart',this)">Grafik Produksi</div>
       <div class="tab" onclick="switchTab('tab-depr',this)">Jadwal Depresiasi</div>
     </div>
     <div class="tab-content active" id="tab-cashflow">
@@ -208,7 +232,10 @@
       </div>
     </div>
     <div class="tab-content" id="tab-chart">
-      <div id="chart-wrap"><canvas id="ncf-chart"></canvas></div>
+      <div class="chart-wrap"><canvas id="ncf-chart"></canvas></div>
+    </div>
+    <div class="tab-content" id="tab-prod-chart">
+      <div class="chart-wrap"><canvas id="prod-chart"></canvas></div>
     </div>
     <div class="tab-content" id="tab-depr">
       <div class="result-table-wrap">

@@ -248,7 +248,7 @@ td input:focus{background:var(--surface3);outline:1px solid var(--accent)}
 .tab-content.active{display:block}
 
 /* ── CHART ── */
-#chart-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
+#chart-wrap, .chart-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
 canvas{width:100%!important;max-height:300px}
 
 /* ── MISC ── */
