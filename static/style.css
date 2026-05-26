@@ -1,45 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ── DESIGN SYSTEM & CONSTANTS ── */
 :root {
-  /* Colors - Dark Mode Theme */
-  --bg-base: #06040a;
+  /* Colors - Dark Mode Theme (GitHub Style) */
+  --bg-base: #0d1117;
   
-  --bg-blob-1: rgba(99, 102, 241, 0.28);  /* Indigo */
-  --bg-blob-2: rgba(236, 72, 153, 0.24);  /* Pink */
-  --bg-blob-3: rgba(168, 85, 247, 0.25);  /* Purple */
-  --bg-blob-4: rgba(14, 165, 233, 0.22);  /* Sky */
-  --bg-blob-5: rgba(16, 185, 129, 0.15);  /* Emerald */
+  --bg-blob-1: transparent;
+  --bg-blob-2: transparent;
+  --bg-blob-3: transparent;
+  --bg-blob-4: transparent;
+  --bg-blob-5: transparent;
 
-  --glass: rgba(20, 15, 30, 0.35);
-  --glass-hover: rgba(28, 22, 45, 0.55);
-  --glass-strong: rgba(30, 24, 48, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-hover: rgba(255, 255, 255, 0.25);
-  --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01));
+  --glass: #161b22;
+  --glass-hover: #21262d;
+  --glass-strong: #30363d;
+  --glass-border: #30363d;
+  --glass-border-hover: #8b949e;
+  --glass-gradient: none;
 
-  --text: #f8fafc;
-  --text-dim: #94a3b8;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
 
-  --accent: #818cf8;                      /* Indigo 400 */
-  --accent-hover: #6366f1;                /* Indigo 500 */
-  --accent-glow: rgba(99, 102, 241, 0.4);
+  --accent: #58a6ff;                      /* GitHub Blue */
+  --accent-hover: #3182ce;
+  --accent-glow: rgba(88, 166, 255, 0.15);
   
-  --green: #34d399;                       /* Emerald 400 */
-  --green-glow: rgba(52, 211, 153, 0.2);
-  --red: #f43f5e;                         /* Rose 500 */
-  --red-glow: rgba(244, 63, 94, 0.25);
-  --amber: #fbbf24;
-  --blue: #38bdf8;
+  --green: #238636;                       /* GitHub Green */
+  --green-glow: rgba(35, 134, 54, 0.15);
+  --red: #da3633;                         /* GitHub Red */
+  --red-glow: rgba(218, 54, 51, 0.15);
+  --amber: #d29922;
+  --blue: #58a6ff;
 
-  --input-bg: rgba(0, 0, 0, 0.3);
-  --input-focus: rgba(0, 0, 0, 0.55);
-  --shadow-main: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --input-bg: #010409;
+  --input-focus: #0d1117;
+  --shadow-main: 0 8px 24px rgba(0, 0, 0, 0.2);
 
   --font: 'Plus Jakarta Sans', sans-serif;
   --mono: 'JetBrains Mono', monospace;
-  --radius: 24px;
-  --blur: blur(32px) saturate(200%);
+  --radius: 8px;
+  --blur: none;
 }
 
 /* ── LIGHT MODE OVERRIDES ── */
@@ -76,6 +76,8 @@
   --input-bg: rgba(255, 255, 255, 0.7);
   --input-focus: #ffffff;
   --shadow-main: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+  --radius: 24px;
+  --blur: blur(32px) saturate(200%);
 }
 
 /* ── CORE STYLES ── */
@@ -115,6 +117,11 @@ body {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  display: none;
+}
+
+[data-theme="light"] .blob-wrapper {
+  display: block;
 }
 
 .blob {
@@ -516,7 +523,6 @@ select option {
 /* ── DATA INPUT TABLE ── */
 .table-wrap {
   overflow-x: auto;
-  max-height: 480px;
   overflow-y: auto;
   border-radius: 16px;
   border: 1px solid var(--glass-border);
@@ -540,13 +546,13 @@ th {
   background-image: var(--glass-gradient);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 12px 16px;
+  padding: 8px 10px;
   text-align: right;
   font-family: var(--font);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: var(--text-dim);
   border-bottom: 1px solid var(--glass-border);
   white-space: nowrap;
@@ -557,11 +563,11 @@ th:first-child {
 }
 
 td {
-  padding: 10px 16px;
+  padding: 6px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background 0.2s;
   font-family: var(--mono);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   text-align: right;
 }
 
@@ -773,6 +779,8 @@ td input:focus {
 /* ── RESULT TABULAR SHEET ── */
 .result-table-wrap {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 65vh;
   background: var(--glass);
   background-image: var(--glass-gradient);
   backdrop-filter: var(--blur);
@@ -808,59 +816,63 @@ td input:focus {
   text-shadow: 0 0 10px rgba(52, 211, 153, 0.1);
 }
 
-/* ── TAB NAVIGATION ── */
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  background: var(--glass);
-  background-image: var(--glass-gradient);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  border-radius: 16px;
-  padding: 6px;
-  margin-bottom: 2rem;
-  border: 1px solid var(--glass-border);
-  overflow-x: auto;
-}
-
-.tab {
-  padding: 0.65rem 1.25rem;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-dim);
-  cursor: pointer;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-}
-
-.tab:hover {
-  color: var(--text);
-  background: var(--glass-hover);
-  background-image: var(--glass-gradient);
-}
-
-.tab.active {
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-  box-shadow: 0 4px 15px var(--accent-glow);
-}
-
-[data-theme="light"] .tab.active {
-  color: #ffffff;
-}
-
-.tab-content {
-  display: none;
+/* ── RESULT SECTIONS ── */
+.result-section {
+  margin-bottom: 3rem;
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.tab-content.active {
-  display: block;
+.section-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── INSIGHT BOX ── */
+.insight-box {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: var(--glass);
+  background-image: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05);
+  animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.insight-icon {
+  color: #818cf8;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+}
+
+.insight-text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.insight-text strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 /* ── CHART CONTAINER ── */
 .chart-wrap {
+  position: relative;
+  height: 40vh; /* Dynamic height relative to viewport */
+  min-height: 350px;
   background: var(--glass);
   background-image: var(--glass-gradient);
   backdrop-filter: var(--blur);
@@ -874,7 +886,7 @@ td input:focus {
 
 canvas {
   width: 100% !important;
-  max-height: 400px;
+  height: 100% !important;
 }
 
 /* ── MISC UTILS (BADGES, UPLOAD ZONE, LOADING) ── */

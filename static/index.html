@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="/static/style.css"/>
-<link rel="stylesheet" href="/static/layout.css"/>
+<link rel="stylesheet" href="/static/style.css?v=100"/>
+<link rel="stylesheet" href="/static/layout.css?v=100"/>
 </head>
 <body>
 
@@ -64,29 +64,49 @@
       </div>
     </div>
     
-    <div class="sidebar-section">
-      <div class="sidebar-label">Menu Utama</div>
-      <nav class="sidebar-nav">
-        <a class="nav-link active" id="nav-projects" onclick="goToProjects()">
-          <i data-lucide="layout-dashboard" class="nav-icon"></i> <span class="nav-text">Dashboard</span>
-        </a>
-        <a href="/api/template-csv" class="nav-link">
-          <i data-lucide="file-down" class="nav-icon"></i> <span class="nav-text">Template CSV</span>
-        </a>
-        <a href="#" class="nav-link">
-          <i data-lucide="pie-chart" class="nav-icon"></i> <span class="nav-text">Analytics</span>
-        </a>
-        <a href="#" class="nav-link">
-          <i data-lucide="history" class="nav-icon"></i> <span class="nav-text">History</span>
-        </a>
-        <a href="#" class="nav-link">
-          <i data-lucide="help-circle" class="nav-icon"></i> <span class="nav-text">Bantuan</span>
-        </a>
-      </nav>
+    <div class="sidebar-scroll-area">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Menu Utama</div>
+        <nav class="sidebar-nav">
+          <a class="nav-link active" id="nav-projects" onclick="goToProjects()">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i> <span class="nav-text">Dashboard</span>
+          </a>
+          <a href="/api/template-csv" class="nav-link">
+            <i data-lucide="file-down" class="nav-icon"></i> <span class="nav-text">Template CSV</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i data-lucide="pie-chart" class="nav-icon"></i> <span class="nav-text">Analytics</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i data-lucide="history" class="nav-icon"></i> <span class="nav-text">History</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i data-lucide="help-circle" class="nav-icon"></i> <span class="nav-text">Bantuan</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section" id="sidebar-shortcuts" style="display: none;">
+        <div class="sidebar-label">Pintasan Analisis</div>
+        <nav class="sidebar-nav">
+          <a href="#tab-cashflow" class="nav-link">
+            <i data-lucide="table" class="nav-icon"></i> <span class="nav-text">Tabel Cash Flow</span>
+          </a>
+          <a href="#tab-chart" class="nav-link">
+            <i data-lucide="bar-chart-2" class="nav-icon"></i> <span class="nav-text">Grafik NCF</span>
+          </a>
+          <a href="#tab-prod-chart" class="nav-link">
+            <i data-lucide="trending-up" class="nav-icon"></i> <span class="nav-text">Grafik Produksi</span>
+          </a>
+          <a href="#tab-depr" class="nav-link">
+            <i data-lucide="calendar" class="nav-icon"></i> <span class="nav-text">Jadwal Depresiasi</span>
+          </a>
+        </nav>
+      </div>
     </div>
 
     <div class="sidebar-bottom">
-      <div class="sidebar-section">
+      <div class="sidebar-section" style="margin-bottom:0">
         <div class="sidebar-label">Pengaturan</div>
         <button id="theme-toggle" class="sidebar-btn" title="Ganti Tema">
           <i data-lucide="sun" id="theme-icon"></i> <span class="theme-text">Mode Tema</span>
@@ -149,7 +169,7 @@
     </div>
 
 <!-- ========== PAGE: PROJECT DETAIL (Calculator) ========== -->
-<div id="page-detail" class="container" style="display:none">
+<div id="page-detail" class="page-container" style="display:none; padding: 2rem 3rem;">
 
   <!-- Project Header -->
   <div class="project-header">
@@ -170,11 +190,11 @@
     </div>
   </div>
 
-  <div class="grid-main">
+  <div class="grid-main" style="flex: 1; min-height: 0; align-items: stretch;">
     <!-- LEFT PANEL -->
-    <div>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
       <!-- Upload CSV -->
-      <div class="panel" style="margin-bottom:1rem">
+      <div class="panel">
         <div class="panel-header"><i data-lucide="upload" class="panel-icon"></i> Import Data CSV</div>
         <div class="panel-body">
           <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
@@ -234,7 +254,7 @@
       </div>
 
       <!-- Proyeksi Produksi (Regresi) -->
-      <div class="panel" style="margin-top:1.5rem">
+      <div class="panel">
         <div class="panel-header"><i data-lucide="trending-up" class="panel-icon icon-blue"></i> Proyeksi Produksi (Regresi)</div>
         <div class="panel-body">
           <div class="form-row">
@@ -262,14 +282,15 @@
     </div>
 
     <!-- RIGHT PANEL: Data Table -->
-    <div>
-      <div class="panel">
+    <div style="position: relative; height: 100%; min-height: 500px;">
+      <div style="position: absolute; top: 0; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column;">
+        <div class="panel" style="flex: 1; display: flex; flex-direction: column; margin-bottom: 0; min-height: 0;">
         <div class="panel-header">
           <i data-lucide="table" class="panel-icon"></i> Data Lapangan
           <span style="flex:1"></span>
           <span id="row-count" class="badge badge-orange">0 baris</span>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 0;">
           <div class="row-controls">
             <button class="btn btn-secondary btn-sm" onclick="addRow()">
               <i data-lucide="plus" class="btn-icon"></i> Tambah Baris
@@ -281,7 +302,7 @@
               <i data-lucide="trash-2" class="btn-icon"></i> Hapus Semua
             </button>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap" style="flex: 1; min-height: 0; margin-bottom: 1.5rem;">
             <table id="input-table">
               <thead>
                 <tr>
@@ -299,6 +320,7 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
   </div>
 
@@ -309,13 +331,12 @@
       <span id="verdict-text"></span>
     </div>
     <div class="indicators-grid" id="kpi-grid"></div>
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('tab-cashflow',this)">Tabel Cash Flow</div>
-      <div class="tab" onclick="switchTab('tab-chart',this)">Grafik NCF</div>
-      <div class="tab" onclick="switchTab('tab-prod-chart',this)">Grafik Produksi</div>
-      <div class="tab" onclick="switchTab('tab-depr',this)">Jadwal Depresiasi</div>
-    </div>
-    <div class="tab-content active" id="tab-cashflow">
+    <section class="result-section" id="tab-cashflow">
+      <h3 class="section-heading">Tabel Cash Flow</h3>
+      <div class="insight-box" id="insight-cashflow" style="display:none">
+        <i data-lucide="lightbulb" class="insight-icon"></i>
+        <div class="insight-text" id="insight-text-cashflow"></div>
+      </div>
       <div class="result-table-wrap">
         <table class="result-table" id="result-table">
           <thead><tr>
@@ -328,21 +349,39 @@
           <tfoot id="result-tfoot"></tfoot>
         </table>
       </div>
-    </div>
-    <div class="tab-content" id="tab-chart">
+    </section>
+
+    <section class="result-section" id="tab-chart">
+      <h3 class="section-heading">Grafik NCF</h3>
+      <div class="insight-box" id="insight-ncf" style="display:none">
+        <i data-lucide="trending-up" class="insight-icon"></i>
+        <div class="insight-text" id="insight-text-ncf"></div>
+      </div>
       <div class="chart-wrap"><canvas id="ncf-chart"></canvas></div>
-    </div>
-    <div class="tab-content" id="tab-prod-chart">
+    </section>
+
+    <section class="result-section" id="tab-prod-chart">
+      <h3 class="section-heading">Grafik Produksi</h3>
+      <div class="insight-box" id="insight-prod" style="display:none">
+        <i data-lucide="activity" class="insight-icon"></i>
+        <div class="insight-text" id="insight-text-prod"></div>
+      </div>
       <div class="chart-wrap"><canvas id="prod-chart"></canvas></div>
-    </div>
-    <div class="tab-content" id="tab-depr">
+    </section>
+
+    <section class="result-section" id="tab-depr">
+      <h3 class="section-heading">Jadwal Depresiasi</h3>
+      <div class="insight-box" id="insight-depr" style="display:none">
+        <i data-lucide="calculator" class="insight-icon"></i>
+        <div class="insight-text" id="insight-text-depr"></div>
+      </div>
       <div class="result-table-wrap">
         <table class="result-table" id="depr-table">
           <thead><tr><th>Tahun ke-</th><th>Depresiasi ($)</th><th>Kumulatif Depresiasi ($)</th></tr></thead>
           <tbody id="depr-tbody"></tbody>
         </table>
       </div>
-    </div>
+    </section>
   </div>
 </div>
   </main>
@@ -350,6 +389,6 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="/static/app.js"></script>
+<script src="/static/app.js?v=4"></script>
 </body>
 </html>

@@ -78,8 +78,9 @@ def compute_cashflow(
         if yr == 0:
             ncf = -(cap + ncap)
         else:
-            # kurangin juga sama cap dan ncap buat inves lanjutan
-            ncf = income - op - cap - ncap - tax
+            # Mengikuti logika Excel (dosen): NCF = Laba Bersih (Taxable - Tax)
+            # Walaupun secara teknis ini tidak add-back depresiasi, kita ikuti permintaan user.
+            ncf = (taxable - tax) - cap - ncap
 
         cumulative += ncf
 

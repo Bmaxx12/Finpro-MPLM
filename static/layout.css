@@ -18,7 +18,18 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  max-height: 100vh;
   z-index: 100;
+  overflow: hidden;
+}
+
+.sidebar-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+  margin-right: -0.5rem;
+  overscroll-behavior: contain;
 }
 
 .sidebar-header {
@@ -105,6 +116,7 @@
   flex-direction: column;
   min-height: 100vh;
   position: relative;
+  min-width: 0; /* Mencegah elemen anak (seperti tabel) melampaui lebar layar */
 }
 
 /* ── TOP BAR ── */

@@ -23,6 +23,8 @@ function showToast(msg, type='success'){
 function goToProjects(){
   document.getElementById('page-projects').style.display = '';
   document.getElementById('page-detail').style.display = 'none';
+  const shortcuts = document.getElementById('sidebar-shortcuts');
+  if(shortcuts) shortcuts.style.display = 'none';
   currentProjectId = null;
   loadProjectsList();
 }
@@ -33,6 +35,8 @@ function goToProject(id){
   document.getElementById('page-detail').style.display = '';
   document.getElementById('results-section').style.display = 'none';
   document.getElementById('btn-export').disabled = true;
+  const shortcuts = document.getElementById('sidebar-shortcuts');
+  if(shortcuts) shortcuts.style.display = 'block';
   lastResult = null;
   window.regressionParams = null;
   loadProjectDetail(id);
@@ -447,7 +451,72 @@ function renderResults(data){
   // Chart
   renderChart(data.cashflow);
   renderProdChart(data.cashflow);
+  generateDynamicInsights(data);
   lucide.createIcons();
+}
+
+function generateDynamicInsights(data) {
+  const cf = data.cashflow;
+  const ind = data.indicators;
+  
+  // 1. Cash Flow Insight
+  const totalTax = cf.reduce((s, r) => s + (r.tax || 0), 0);
+  const totalOpex = cf.reduce((s, r) => s + (r.opex || 0), 0);
+  const totalCapital = cf.reduce((s, r) => s + (r.capital || 0), 0);
+  const cfBox = document.getElementById('insight-cashflow');
+  const cfText = document.getElementById('insight-text-cashflow');
+  if (cfBox && cfText) {
+    cfText.innerHTML = `Analisis Cash Flow menunjukkan total pengeluaran kapital sebesar <strong>$${fmt(totalCapital, 1)}</strong> dan operasi sebesar <strong>$${fmt(totalOpex, 1)}</strong>. Proyek ini berkontribusi pada penerimaan negara melalui pajak total sebesar <strong>$${fmt(totalTax, 1)}</strong> selama masa operasinya.`;
+    cfBox.style.display = 'flex';
+  }
+
+  // 2. NCF Insight
+  const ncfBox = document.getElementById('insight-ncf');
+  const ncfText = document.getElementById('insight-text-ncf');
+  if (ncfBox && ncfText) {
+    if (ind.feasible) {
+      ncfText.innerHTML = `Kurva kumulatif menukik di awal karena investasi kapital, kemudian berbalik positif pada <strong>Tahun ke-${ind.POT_str ? ind.POT_str.split(' ')[0] : '?'}</strong>. Net Present Value tercapai di angka <strong>$${fmt(ind.NPV, 1)}</strong> dengan tingkat pengembalian (IRR) sebesar <strong>${(ind.ROR*100).toFixed(2)}%</strong>.`;
+    } else {
+      ncfText.innerHTML = `Proyek ini <strong>tidak layak (NPV negatif)</strong>. Kurva kumulatif gagal menembus titik impas (Break-even) hingga akhir umur proyek. Evaluasi ulang pengeluaran kapital atau batas minimum ekonomi diperlukan.`;
+    }
+    ncfBox.style.display = 'flex';
+  }
+
+  // 3. Prod Insight
+  const prodBox = document.getElementById('insight-prod');
+  const prodText = document.getElementById('insight-text-prod');
+  if (prodBox && prodText) {
+    let maxProd = 0;
+    let peakYear = 0;
+    cf.forEach(r => {
+      if (r.produksi > maxProd) {
+        maxProd = r.produksi;
+        peakYear = r.tahun;
+      }
+    });
+    prodText.innerHTML = `Puncak produksi (Peak) diproyeksikan terjadi pada <strong>Tahun ke-${peakYear}</strong> sebesar <strong>${fmt(maxProd, 1)} MBbl</strong>. Setelah fase tersebut, produksi akan mengalami tren penurunan (*decline*) seiring berkurangnya tekanan reservoir.`;
+    prodBox.style.display = 'flex';
+  }
+
+  // 4. Depr Insight
+  const deprBox = document.getElementById('insight-depr');
+  const deprText = document.getElementById('insight-text-depr');
+  const methodNames = {
+    straight_line: 'Straight Line', declining_balance: 'Declining Balance',
+    double_declining: 'Double Declining', unit_of_production: 'Unit of Production',
+    sum_of_year: 'Sum of Year'
+  };
+  if (deprBox && deprText && data.depreciation_schedule) {
+    const deprArr = data.depreciation_schedule;
+    const deprLife = data.params.depr_life;
+    const method = methodNames[data.params.depr_method] || 'Metode';
+    let endYear = deprLife;
+    if (deprArr.length > 0 && deprArr[deprArr.length-1] === 0) {
+      endYear = deprArr.findIndex(v => v === 0);
+    }
+    deprText.innerHTML = `Skema <strong>${method}</strong> membebankan biaya depresiasi aset kapital selama umur ekonomis <strong>${deprLife} tahun</strong>. Hal ini memengaruhi pengurangan (*tax deduction*) terhadap Pajak Pendapatan di tahun-tahun awal beroperasinya lapangan.`;
+    deprBox.style.display = 'flex';
+  }
 }
 
 function renderChart(cf){
@@ -496,13 +565,13 @@ function renderChart(cf){
       ]
     },
     options:{
-      responsive:true, maintainAspectRatio:true,
+      responsive:true, maintainAspectRatio:false,
       plugins:{
-        legend:{ labels:{ color: cText, font:{family:'Outfit', size:12, weight:'600'} } },
-        tooltip:{
-          backgroundColor:'rgba(18, 14, 30, 0.95)', borderColor:cBorder, borderWidth:1,
-          titleColor:'#fbbf24', bodyColor: cText, cornerRadius: 10, padding: 12,
-          titleFont: {family: 'Outfit', size: 12, weight: 'bold'},
+        legend:{ labels:{ color: cText, font:{family:'Plus Jakarta Sans', size:12, weight:'600'} } },
+        tooltip: {
+          backgroundColor:'#0d1117', borderColor:cBorder, borderWidth:1,
+          cornerRadius:10, padding:12, titleColor:cAccent, bodyColor:cText,
+          titleFont: {family: 'Plus Jakarta Sans', size: 12, weight: 'bold'},
           bodyFont: {family: 'JetBrains Mono', size: 11},
           callbacks:{ label(ctx){ return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID',{minimumFractionDigits:1})}` } }
         }
@@ -622,16 +691,16 @@ function renderProdChart(cf) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: cText, font: { family: 'Outfit', size: 12, weight: '600' } } },
+        legend: { labels: { color: cText, font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' } } },
         tooltip: {
-          backgroundColor: 'rgba(18, 14, 30, 0.95)',
+          backgroundColor: '#0d1117',
           borderColor: cBorder,
           borderWidth: 1, cornerRadius: 10, padding: 12,
           titleColor: cAccent,
           bodyColor: cText,
-          titleFont: {family: 'Outfit', size: 12, weight: 'bold'},
+          titleFont: {family: 'Plus Jakarta Sans', size: 12, weight: 'bold'},
           bodyFont: {family: 'JetBrains Mono', size: 11},
           callbacks: {
             label(ctx) {
@@ -785,11 +854,17 @@ function projectProductionLinearRegression() {
   collectRows();
   
   // ambil data yang belum diprediksi aja
-  const points = rows.filter(r => r.tahun > 0 && !r.is_predicted);
-  if (points.length < 2) {
+  const originalPoints = rows.filter(r => r.tahun > 0 && !r.is_predicted);
+  if (originalPoints.length < 2) {
     showToast('❌ Butuh minimal 2 baris data produksi asli (belum diprediksi) untuk regresi', 'error');
     return;
   }
+
+  // cari tahun peak (puncak produksi)
+  let peakRow = originalPoints.reduce((max, p) => p.produksi_mbbl > max.produksi_mbbl ? p : max, originalPoints[0]);
+  let peakYear = peakRow.tahun;
+  let points = originalPoints.filter(p => p.tahun >= peakYear);
+  if (points.length < 2) points = originalPoints; // fallback
   
   const N = points.length;
   let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -858,12 +933,7 @@ function projectProductionLinearRegression() {
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-function switchTab(id, el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById(id).classList.add('active');
-}
+// Tabs removed
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
 async function exportCSV(){
