@@ -102,8 +102,8 @@ def run_calculation(req: CalcRequest) -> dict:
     ncap_lst    = [r.non_capital_usd for r in rows]
     opex_lst    = [r.opex_usd for r in rows]
 
-    # gabung capital dan non-capital untuk basis depresiasi
-    total_capital = sum(capital_lst) + sum(ncap_lst)
+    # hitung depresiasi murni dari capital aja
+    total_capital = sum(capital_lst)
     # hitung total tahun produksi aktif
     n_prod = sum(1 for i, r in enumerate(rows) if r.tahun > 0)
 

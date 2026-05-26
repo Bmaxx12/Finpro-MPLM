@@ -230,7 +230,7 @@ function addRow(data=null){
   renderTable();
 }
 
-// bikin fungsi generate otomatis sampai 20 tahun
+// bikin data otomatis ke depan
 function generateDeclineCurve(){
   collectRows();
   if(rows.length === 0) return showToast("Tambahkan minimal 1 baris data dulu", "error");
@@ -264,6 +264,9 @@ function generateDeclineCurve(){
   
   renderTable();
   showToast("Auto-generate data sampai tahun ke-20 berhasil", "success");
+  
+  // panggil auto hitung tanpa tekan tombol
+  runCalculation();
 }
 
 function removeRow(id){

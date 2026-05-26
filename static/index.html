@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="/static/style.css?v=100"/>
+<link rel="stylesheet" href="/static/style.css?v=101"/>
 <link rel="stylesheet" href="/static/layout.css?v=100"/>
 </head>
 <body>
@@ -263,30 +263,43 @@
         </div>
       </div>
 
-      <!-- Proyeksi Produksi (Regresi) -->
+      <!-- Proyeksi Data (Decline Curve) -->
       <div class="panel">
-        <div class="panel-header"><i data-lucide="trending-up" class="panel-icon icon-blue"></i> Proyeksi Produksi (Regresi)</div>
+        <div class="panel-header"><i data-lucide="rocket" class="panel-icon icon-green"></i> Proyeksi Masa Depan</div>
         <div class="panel-body">
-          <div class="form-row">
-            <label>Metode Regresi</label>
-            <select id="reg-method">
-              <option value="expo_peak" selected>Eksponensial Decline (Mulai dari Peak)</option>
-              <option value="expo_all">Eksponensial (Semua Data)</option>
-              <option value="linear_peak">Linear (Mulai dari Peak)</option>
-              <option value="linear_all">Linear (Semua Data)</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>Tahun Proyeksi</label>
-            <input type="number" id="proj-years" value="20" min="1" max="50" step="1"/>
-          </div>
-          <button class="btn btn-secondary btn-blue-border" style="width:100%; margin-bottom: 0.5rem;" onclick="applyRegressionProjection()">
-            <i data-lucide="zap" class="btn-icon"></i> Proyeksikan &amp; Terapkan
+          
+          <!-- Tombol Utama Decline Curve -->
+          <button class="btn btn-green" style="width:100%; margin-bottom: 1rem; padding: 0.8rem; font-weight: 600; justify-content: center; background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.5); color: #10b981;" onclick="generateDeclineCurve()">
+            <i data-lucide="trending-down" class="btn-icon"></i> Auto-Generate (Decline Curve) ✨
           </button>
-          <button class="btn btn-secondary btn-amber-border" style="width:100%;" onclick="projectProductionLinearRegression()">
-            <i data-lucide="trending-up" class="btn-icon"></i> Proyeksi Regresi Linear ke Tahun 20
-          </button>
-          <div id="linear-reg-info" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-dim); text-align: center;"></div>
+          
+          <!-- Opsi Sekunder (Regresi) dibungkus details agar rapi dan tidak membingungkan -->
+          <details style="border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem 1rem; cursor: pointer; color: var(--text-dim);">
+            <summary style="font-size: 0.85rem; font-weight: 500; outline: none;"><i data-lucide="settings-2" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Opsi Alternatif (Regresi Linear)</summary>
+            <div style="margin-top: 1rem;">
+              <div class="form-row">
+                <label style="font-size: 0.75rem;">Metode Regresi</label>
+                <select id="reg-method" style="font-size: 0.8rem; padding: 0.4rem;">
+                  <option value="expo_peak" selected>Eksponensial Decline (Peak)</option>
+                  <option value="expo_all">Eksponensial (Semua)</option>
+                  <option value="linear_peak">Linear (Peak)</option>
+                  <option value="linear_all">Linear (Semua)</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label style="font-size: 0.75rem;">Tahun Proyeksi</label>
+                <input type="number" id="proj-years" value="20" min="1" max="50" step="1" style="font-size: 0.8rem; padding: 0.4rem;"/>
+              </div>
+              <button class="btn btn-secondary btn-sm btn-blue-border" style="width:100%; margin-bottom: 0.5rem;" onclick="applyRegressionProjection()">
+                <i data-lucide="zap" class="btn-icon"></i> Terapkan Regresi
+              </button>
+              <button class="btn btn-secondary btn-sm btn-amber-border" style="width:100%;" onclick="projectProductionLinearRegression()">
+                <i data-lucide="trending-up" class="btn-icon"></i> Regresi Linear ke Th 20
+              </button>
+              <div id="linear-reg-info" style="margin-top: 10px; font-size: 0.75rem; color: var(--text-dim); text-align: center;"></div>
+            </div>
+          </details>
+
         </div>
       </div>
     </div>
@@ -304,9 +317,6 @@
           <div class="row-controls">
             <button class="btn btn-secondary btn-sm" onclick="addRow()">
               <i data-lucide="plus" class="btn-icon"></i> Tambah Baris
-            </button>
-            <button class="btn btn-green btn-sm" onclick="generateDeclineCurve()" style="background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.4); color: #34d399;">
-              🚀 Auto-Generate (Decline Curve)
             </button>
             <button class="btn btn-secondary btn-sm" onclick="loadExample()">
               <i data-lucide="clipboard-list" class="btn-icon"></i> Load Contoh (Soal 1 FM)
@@ -402,6 +412,6 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="/static/app.js?v=5"></script>
+<script src="/static/app.js?v=6"></script>
 </body>
 </html>

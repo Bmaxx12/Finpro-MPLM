@@ -88,6 +88,7 @@
 }
 
 html {
+  zoom: 0.8;
   scroll-behavior: smooth;
 }
 
