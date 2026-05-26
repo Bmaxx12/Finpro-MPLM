@@ -321,18 +321,13 @@ function renderTable(){
 // ── Example Data ─────────────────────────────────────────────────────────────
 function loadExample(){
   window.regressionParams = null;
+  // ganti data contoh pake soal terbaru
   const data = [
-    {tahun:0,  produksi_mbbl:0,   harga_minyak_usd:20, capital_usd:6500, non_capital_usd:3000, opex_usd:0},
-    {tahun:1,  produksi_mbbl:215, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:2,  produksi_mbbl:425, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:3,  produksi_mbbl:740, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:4,  produksi_mbbl:825, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:5,  produksi_mbbl:710, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:6,  produksi_mbbl:525, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:7,  produksi_mbbl:350, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:8,  produksi_mbbl:150, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:9,  produksi_mbbl:130, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
-    {tahun:10, produksi_mbbl:110, harga_minyak_usd:20, capital_usd:0, non_capital_usd:0, opex_usd:175},
+    {tahun:0,  produksi_mbbl:0,   harga_minyak_usd:32, capital_usd:13000, non_capital_usd:8000, opex_usd:0},
+    {tahun:1,  produksi_mbbl:175, harga_minyak_usd:32, capital_usd:0, non_capital_usd:0, opex_usd:180},
+    {tahun:2,  produksi_mbbl:201, harga_minyak_usd:32, capital_usd:0, non_capital_usd:0, opex_usd:180},
+    {tahun:3,  produksi_mbbl:217, harga_minyak_usd:32, capital_usd:0, non_capital_usd:0, opex_usd:180},
+    {tahun:4,  produksi_mbbl:198, harga_minyak_usd:32, capital_usd:0, non_capital_usd:0, opex_usd:184.5},
   ];
   rows = [];
   data.forEach(d=>addRow(d));

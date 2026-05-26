@@ -421,19 +421,13 @@ async def export_csv(req: CalcRequest):
 
 @app.get("/api/template-csv")
 async def get_template():
-    """Return example CSV template (Soal 1 from FM module)."""
+    # ganti data template csv pake angka terbaru
     template = """tahun,produksi_mbbl,harga_minyak_usd,capital_usd,non_capital_usd,opex_usd
-0,0,20,6500,3000,0
-1,215,20,0,0,175
-2,425,20,0,0,175
-3,740,20,0,0,175
-4,825,20,0,0,175
-5,710,20,0,0,175
-6,525,20,0,0,175
-7,350,20,0,0,175
-8,150,20,0,0,175
-9,130,20,0,0,175
-10,110,20,0,0,175
+0,0,32,13000,8000,0
+1,175,32,0,0,180
+2,201,32,0,0,180
+3,217,32,0,0,180
+4,198,32,0,0,184.5
 """
     return StreamingResponse(
         iter([template]),
