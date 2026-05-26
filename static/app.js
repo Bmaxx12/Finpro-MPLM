@@ -230,6 +230,42 @@ function addRow(data=null){
   renderTable();
 }
 
+// bikin fungsi generate otomatis sampai 20 tahun
+function generateDeclineCurve(){
+  collectRows();
+  if(rows.length === 0) return showToast("Tambahkan minimal 1 baris data dulu", "error");
+  
+  let lastRow = rows[rows.length-1];
+  let currentYear = lastRow.tahun;
+  if(currentYear >= 20) return showToast("Sudah mencapai atau melebihi tahun ke-20", "error");
+
+  const decRate = parseFloat(document.getElementById('decline-rate').value) || 3;
+  const opxEsc = parseFloat(document.getElementById('opex-escalation').value) || 2.5;
+
+  let currentProd = lastRow.produksi_mbbl;
+  let currentOpex = lastRow.opex_usd;
+  const currentPrice = lastRow.harga_minyak_usd;
+
+  for(let y = currentYear + 1; y <= 20; y++){
+    currentProd = currentProd * (1 - (decRate / 100));
+    currentOpex = currentOpex * (1 + (opxEsc / 100));
+    
+    const id = rowIdCounter++;
+    rows.push({
+      _id: id,
+      tahun: y,
+      produksi_mbbl: currentProd,
+      harga_minyak_usd: currentPrice,
+      capital_usd: 0,
+      non_capital_usd: 0,
+      opex_usd: currentOpex
+    });
+  }
+  
+  renderTable();
+  showToast("Auto-generate data sampai tahun ke-20 berhasil", "success");
+}
+
 function removeRow(id){
   rows = rows.filter(r=>r._id !== id);
   renderTable();

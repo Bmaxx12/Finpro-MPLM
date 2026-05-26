@@ -226,6 +226,16 @@
             <label>Umur Depresiasi (Tahun)</label>
             <input type="number" id="depr-life" value="10" min="1" step="1"/>
           </div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label>Decline Rate Produksi (%)</label>
+              <input type="number" id="decline-rate" value="3" min="0" step="0.1"/>
+            </div>
+            <div class="form-row">
+              <label>Eskalasi Opex (%)</label>
+              <input type="number" id="opex-escalation" value="2.5" min="0" step="0.1"/>
+            </div>
+          </div>
           <div class="form-row" id="reserve-row" style="display:none">
             <label>Total Cadangan (MBbl) — untuk Unit of Production</label>
             <input type="number" id="reserve-mbbl" value="4180" min="0" step="1"/>
@@ -294,6 +304,9 @@
           <div class="row-controls">
             <button class="btn btn-secondary btn-sm" onclick="addRow()">
               <i data-lucide="plus" class="btn-icon"></i> Tambah Baris
+            </button>
+            <button class="btn btn-green btn-sm" onclick="generateDeclineCurve()" style="background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.4); color: #34d399;">
+              🚀 Auto-Generate (Decline Curve)
             </button>
             <button class="btn btn-secondary btn-sm" onclick="loadExample()">
               <i data-lucide="clipboard-list" class="btn-icon"></i> Load Contoh (Soal 1 FM)
@@ -389,6 +402,6 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="/static/app.js?v=4"></script>
+<script src="/static/app.js?v=5"></script>
 </body>
 </html>

@@ -102,9 +102,9 @@ def run_calculation(req: CalcRequest) -> dict:
     ncap_lst    = [r.non_capital_usd for r in rows]
     opex_lst    = [r.opex_usd for r in rows]
 
-    # Total capital for depreciation (Sesuai Excel: sum of Capital + Non Capital)
+    # gabung capital dan non-capital untuk basis depresiasi
     total_capital = sum(capital_lst) + sum(ncap_lst)
-    # Number of production years (non-zero production OR non-investment years)
+    # hitung total tahun produksi aktif
     n_prod = sum(1 for i, r in enumerate(rows) if r.tahun > 0)
 
     # Depreciation
@@ -137,8 +137,8 @@ def run_calculation(req: CalcRequest) -> dict:
     # Indicators
     indicators = compute_all_indicators(ncf_list, investment, req.discount_rate)
 
-    # All depr values mapped back to each row
-    depr_mapped = [0.0] + list(depr) + [0.0] * max(0, n_prod - len(depr))
+    # petakan nilai depresiasi statis berdasar depr_life
+    depr_mapped = [0.0] + list(depr) + [0.0] * max(0, req.depr_life - len(depr))
 
     return {
         "cashflow": cf_rows,

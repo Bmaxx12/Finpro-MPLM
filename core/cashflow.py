@@ -59,11 +59,12 @@ def compute_cashflow(
         taxable = income - op - depr
 
         if use_lcf:
-            # lcf nyimpen akumulasi rugi dari tahun sebelumnya
+            # simpan akumulasi rugi lcf
             if taxable < 0:
                 lcf += taxable
                 tax_base = 0.0
             else:
+                # potong laba dengan lcf
                 tax_base = taxable + lcf
                 if tax_base > 0:
                     lcf = 0.0
@@ -73,14 +74,14 @@ def compute_cashflow(
         else:
             tax_base = max(taxable, 0.0)
 
+        # pajak nol kalo rugi
         tax = tax_rate * tax_base
 
         if yr == 0:
             ncf = -(cap + ncap)
         else:
-            # Mengikuti logika Excel (dosen): NCF = Laba Bersih (Taxable - Tax)
-            # Walaupun secara teknis ini tidak add-back depresiasi, kita ikuti permintaan user.
-            ncf = (taxable - tax) - cap - ncap
+            # bikin rumus ncf sesuai excel dosen
+            ncf = taxable - tax - cap - ncap
 
         cumulative += ncf
 
