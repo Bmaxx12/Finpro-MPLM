@@ -39,6 +39,7 @@ class YearRow(BaseModel):
 class CalcRequest(BaseModel):
     rows: List[YearRow]
     depr_method: str = "straight_line"
+    depr_base: str = "total"
     depr_life: int = 10
     tax_rate: float = 0.52
     discount_rate: float = 0.15
@@ -102,8 +103,8 @@ def run_calculation(req: CalcRequest) -> dict:
     ncap_lst    = [r.non_capital_usd for r in rows]
     opex_lst    = [r.opex_usd for r in rows]
 
-    # hitung depresiasi murni dari capital aja
-    total_capital = sum(capital_lst)
+    # bikin basis depresiasi bisa milih capital aja atau total investasi
+    total_capital = sum(capital_lst) if req.depr_base == "capital_only" else sum(capital_lst) + sum(ncap_lst)
     # hitung total tahun produksi aktif
     n_prod = sum(1 for i, r in enumerate(rows) if r.tahun > 0)
 

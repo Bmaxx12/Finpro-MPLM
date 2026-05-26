@@ -193,6 +193,7 @@ async function saveProjectData(){
   collectRows();
   const params = {
     depr_method: document.getElementById('depr-method').value,
+    depr_base: document.getElementById('depr-base') ? document.getElementById('depr-base').value : 'total',
     depr_life: parseInt(document.getElementById('depr-life').value) || 10,
     tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
     discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
@@ -383,6 +384,7 @@ async function runCalculation(){
       non_capital_usd: r.non_capital_usd, opex_usd: r.opex_usd,
     })),
     depr_method: document.getElementById('depr-method').value,
+    depr_base: document.getElementById('depr-base') ? document.getElementById('depr-base').value : 'total',
     depr_life: parseInt(document.getElementById('depr-life').value) || 10,
     tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
     discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
@@ -763,213 +765,7 @@ function renderProdChart(cf) {
   });
 }
 
-async function applyRegressionProjection() {
-  collectRows();
-  
-  // 1. Find all active production points
-  const points = rows.filter(r => r.tahun > 0 && r.produksi_mbbl > 0);
-  if (points.length < 2) {
-    showToast('❌ Butuh minimal 2 baris data produksi > 0 untuk melakukan regresi', 'error');
-    return;
-  }
-  
-  const method = document.getElementById('reg-method').value;
-  const projYears = parseInt(document.getElementById('proj-years').value) || 20;
-  
-  // 2. Select points to fit
-  let fitPoints = points;
-  let peakYear = 0;
-  if (method.includes('_peak')) {
-    let peakRow = points.reduce((max, p) => p.produksi_mbbl > max.produksi_mbbl ? p : max, points[0]);
-    peakYear = peakRow.tahun;
-    fitPoints = points.filter(p => p.tahun >= peakYear);
-    if (fitPoints.length < 2) {
-      fitPoints = points; // fallback
-      peakYear = 0;
-    }
-  }
-  
-  const N = fitPoints.length;
-  let slope = 0, intercept = 0;
-  let isExpo = method.startsWith('expo');
-  
-  if (isExpo) {
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-    fitPoints.forEach(p => {
-      const x = p.tahun;
-      const y = Math.log(p.produksi_mbbl);
-      sumX += x;
-      sumY += y;
-      sumXY += x * y;
-      sumX2 += x * x;
-    });
-    // Check denom
-    const denom = (N * sumX2 - sumX * sumX);
-    if (Math.abs(denom) < 1e-9) {
-      showToast('❌ Error perhitungan regresi (pembagi nol)', 'error');
-      return;
-    }
-    slope = (N * sumXY - sumX * sumY) / denom;
-    intercept = (sumY - slope * sumX) / N;
-  } else {
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-    fitPoints.forEach(p => {
-      const x = p.tahun;
-      const y = p.produksi_mbbl;
-      sumX += x;
-      sumY += y;
-      sumXY += x * y;
-      sumX2 += x * x;
-    });
-    const denom = (N * sumX2 - sumX * sumX);
-    if (Math.abs(denom) < 1e-9) {
-      showToast('❌ Error perhitungan regresi (pembagi nol)', 'error');
-      return;
-    }
-    slope = (N * sumXY - sumX * sumY) / denom;
-    intercept = (sumY - slope * sumX) / N;
-  }
-  
-  // 3. Get last row parameters to copy forward
-  let maxYear = 0;
-  let lastPrice = 20.0;
-  let lastOpex = 175.0;
-  rows.forEach(r => {
-    if (r.tahun > maxYear) maxYear = r.tahun;
-  });
-  
-  // Let's find the actual last row data
-  const lastRow = rows.find(r => r.tahun === maxYear);
-  if (lastRow) {
-    lastPrice = lastRow.harga_minyak_usd;
-    lastOpex = lastRow.opex_usd;
-  }
-  
-  // 4. Extend the rows array up to projYears
-  let addedCount = 0;
-  for (let y = maxYear + 1; y <= projYears; y++) {
-    // Predict production
-    let predProd = 0;
-    if (isExpo) {
-      predProd = Math.exp(intercept) * Math.exp(slope * y);
-    } else {
-      predProd = Math.max(0, slope * y + intercept);
-    }
-    
-    // Add row
-    const id = rowIdCounter++;
-    rows.push({
-      _id: id,
-      tahun: y,
-      produksi_mbbl: parseFloat(predProd.toFixed(3)),
-      harga_minyak_usd: lastPrice,
-      capital_usd: 0.0,
-      non_capital_usd: 0.0,
-      opex_usd: lastOpex
-    });
-    addedCount++;
-  }
-  
-  // Sort rows by year
-  rows.sort((a, b) => a.tahun - b.tahun);
-  renderTable();
-  
-  // Store the regression params in global state for charting
-  window.regressionParams = {
-    type: isExpo ? 'expo' : 'linear',
-    slope,
-    intercept,
-    peakYear,
-    isExpo
-  };
-  
-  showToast(`✓ Berhasil memproyeksikan data. Ditambahkan ${addedCount} baris baru (Tahun ${maxYear + 1} - ${projYears})`);
-  
-  // Automatically run calculation to update tables & charts!
-  runCalculation();
-}
-
-function projectProductionLinearRegression() {
-  collectRows();
-  
-  // ambil data yang belum diprediksi aja
-  const originalPoints = rows.filter(r => r.tahun > 0 && !r.is_predicted);
-  if (originalPoints.length < 2) {
-    showToast('❌ Butuh minimal 2 baris data produksi asli (belum diprediksi) untuk regresi', 'error');
-    return;
-  }
-
-  // cari tahun peak (puncak produksi)
-  let peakRow = originalPoints.reduce((max, p) => p.produksi_mbbl > max.produksi_mbbl ? p : max, originalPoints[0]);
-  let peakYear = peakRow.tahun;
-  let points = originalPoints.filter(p => p.tahun >= peakYear);
-  if (points.length < 2) points = originalPoints; // fallback
-  
-  const N = points.length;
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-  points.forEach(p => {
-    const x = p.tahun;
-    const y = p.produksi_mbbl;
-    sumX += x;
-    sumY += y;
-    sumXY += x * y;
-    sumX2 += x * x;
-  });
-  
-  const denom = (N * sumX2 - sumX * sumX);
-  if (Math.abs(denom) < 1e-9) {
-    showToast('❌ Error perhitungan regresi linear', 'error');
-    return;
-  }
-  
-  const slope = (N * sumXY - sumX * sumY) / denom;
-  const intercept = (sumY - slope * sumX) / N;
-  
-  document.getElementById('linear-reg-info').innerHTML = `Slope: ${slope.toFixed(2)}, Intercept: ${intercept.toFixed(2)}`;
-  
-  let maxYear = Math.max(...rows.map(r => r.tahun));
-  let lastPrice = 20.0;
-  let lastOpex = 175.0;
-  const lastRow = rows.find(r => r.tahun === maxYear);
-  if (lastRow) {
-    lastPrice = lastRow.harga_minyak_usd;
-    lastOpex = lastRow.opex_usd;
-  }
-  
-  let addedCount = 0;
-  for (let y = maxYear + 1; y <= 20; y++) {
-    let predProd = slope * y + intercept;
-    // pastiin produksi ga negatif
-    if (predProd < 0) predProd = 0;
-    
-    const id = rowIdCounter++;
-    rows.push({
-      _id: id,
-      tahun: y,
-      produksi_mbbl: parseFloat(predProd.toFixed(3)),
-      harga_minyak_usd: lastPrice,
-      capital_usd: 0.0,
-      non_capital_usd: 0.0,
-      opex_usd: lastOpex,
-      is_predicted: true
-    });
-    addedCount++;
-  }
-  
-  rows.sort((a, b) => a.tahun - b.tahun);
-  renderTable();
-  
-  window.regressionParams = {
-    type: 'linear',
-    slope,
-    intercept,
-    peakYear: 0,
-    isExpo: false
-  };
-  
-  showToast(`Proyeksi Linear berhasil. Slope: ${slope.toFixed(2)}, Intercept: ${intercept.toFixed(2)}`);
-  runCalculation();
-}
+// dihapus karena pake decline curve murni
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 // Tabs removed
@@ -998,6 +794,7 @@ async function exportCSV(){
       non_capital_usd: r.non_capital_usd, opex_usd: r.opex_usd,
     })),
     depr_method: document.getElementById('depr-method').value,
+    depr_base: document.getElementById('depr-base') ? document.getElementById('depr-base').value : 'total',
     depr_life: parseInt(document.getElementById('depr-life').value) || 10,
     tax_rate: parseFloat(document.getElementById('tax-rate').value)/100,
     discount_rate: parseFloat(document.getElementById('discount-rate').value)/100,
