@@ -65,20 +65,13 @@ def rate_of_return(ncf_list: list[float], tol: float = 1e-6, max_iter: int = 200
             npv_low = npv_mid
     return (lo + hi) / 2
 
-def discounted_pir(
-    discounted_cashflows: list[float],
-    investment: float
-) -> float:
-    """
-    DPR = PV Positive Cash Flow / Investment
-    """
+def discounted_pir(npv: float, investment: float) -> float:
+    """DPR = NPV / Total Investasi"""
 
     if investment == 0:
         return float("nan")
 
-    pv_positive = sum(v for v in discounted_cashflows if v > 0)
-
-    return pv_positive / investment
+    return npv / investment
 
 def profit_investment_ratio(ncf_list: list[float], investment: float) -> float:
     """PIR = Σ NCF_undiscounted / Investasi"""
@@ -102,13 +95,7 @@ def compute_all_indicators(
     pot = pay_out_time(ncf_list)
     npv = net_present_value(ncf_list, discount_rate)
     ror = rate_of_return(ncf_list)
-
-    # hitung discounted cash flow per tahun
-    disc_cf = discounted_ncf(ncf_list, discount_rate)
-
-    # DPR baru
-    dpr = discounted_pir(disc_cf, investment)
-
+    dpr = discounted_pir(npv, investment)
     pir = profit_investment_ratio(ncf_list, investment)
 
     # Format POT ke "X tahun Y bulan"
@@ -118,7 +105,6 @@ def compute_all_indicators(
 
         pot_months = round((pot - pot_years) * 12)
 
-        # Koreksi jika bulan = 12
         if pot_months == 12:
             pot_years += 1
             pot_months = 0
