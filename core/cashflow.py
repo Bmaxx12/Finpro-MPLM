@@ -1,9 +1,4 @@
-"""
-Cash flow calculation module.
-Computes NCF per year, taxable income, and tax.
-"""
 from typing import Optional
-
 
 def compute_cashflow(
     years: list[int],
@@ -16,56 +11,43 @@ def compute_cashflow(
     tax_rate: float,
     use_lcf: bool = False,
 ) -> list[dict]:
-    """
-    Returns a list of dicts, one per year, with all computed columns.
 
-    Fields per year:
-      tahun, produksi, harga_minyak, capital, non_capital, opex,
-      income, depresiasi, taxable_income, tax, ncf_undiscounted,
-      cumulative_ncf
-    """
     results = []
     cumulative = 0.0
-    lcf = 0.0  # Loss Carry Forward accumulator
+    lcf = 0.0
 
-    # pad depreciation to length of production period if needed
-    prod_years = [(i, y) for i, y in enumerate(years) if (production[i] > 0 or (capital[i] == 0 and non_capital[i] == 0))]
-    depr_idx = 0  # index into depreciation list (only advances during production years)
-
-    # Build depreciation by year (aligned to years with investment or production)
-    # We align depr per year by counting from first year where capital > 0
-    # Actually, depr is pre-computed for N years starting from year 1
-    # Map depreciation values to each year index (excluding year 0)
+    # mapping depresiasi hanya ke tahun produksi (>0)
     depr_by_year = {}
-    depr_counter = 0
-    for i, yr in enumerate(years):
-        if yr == 0:
-            continue
-        if depr_counter < len(depreciation):
-            depr_by_year[i] = depreciation[depr_counter]
-            depr_counter += 1
-        else:
-            depr_by_year[i] = 0.0
+
+    prod_indexes = [i for i, yr in enumerate(years) if yr > 0]
+
+    for j, idx in enumerate(prod_indexes):
+        depr_by_year[idx] = depreciation[j] if j < len(depreciation) else 0.0
 
     for i, yr in enumerate(years):
+
         prod = production[i]
         price = oil_price[i]
         cap = capital[i]
         ncap = non_capital[i]
         op = opex[i]
+
         depr = depr_by_year.get(i, 0.0)
 
+        # Revenue
         income = prod * price
+
+        # Taxable income
         taxable = income - op - depr
 
+        # Loss Carry Forward
         if use_lcf:
-            # simpan akumulasi rugi lcf
             if taxable < 0:
                 lcf += taxable
                 tax_base = 0.0
             else:
-                # potong laba dengan lcf
                 tax_base = taxable + lcf
+
                 if tax_base > 0:
                     lcf = 0.0
                 else:
@@ -74,14 +56,13 @@ def compute_cashflow(
         else:
             tax_base = max(taxable, 0.0)
 
-        # pajak nol kalo rugi
+        # Tax
         tax = tax_rate * tax_base
 
         if yr == 0:
             ncf = -(cap + ncap)
         else:
-            # bikin rumus ncf sesuai excel dosen
-            ncf = taxable - tax - cap - ncap
+            ncf = income - op - tax - cap - ncap
 
         cumulative += ncf
 

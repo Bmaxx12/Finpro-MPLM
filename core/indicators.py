@@ -1,38 +1,51 @@
 """
 Economic indicators: POT, NPV, ROR (IRR), DPR, PIR.
+Semua formula sesuai modul FM dosen Bab IV.
 """
 import math
 
 
 def pay_out_time(ncf_list: list[float]) -> float:
     """
-    POT in decimal years.
-    Finds when cumulative NCF crosses from negative to positive.
+    POT = waktu saat kumulatif NCF berubah dari (-) ke (+).
+
+    Contoh dari modul (Soal 1):
+      Tahun 0 s/d 2 → kumulatif = -2881.8   (masih negatif)
+      Tahun 0 s/d 3 → kumulatif = +4412      (positif)
+      POT = 2 + 2881.8/7293.8 ≈ 2.6 tahun = 2 tahun 7 bulan
+
+    Cara hitung: saat kumulatif baru positif di tahun ke-i,
+      fraksi = |kumulatif_sebelumnya| / NCF_tahun_i
+      POT = (i - 1) + fraksi   [dalam indeks tahun sebenarnya]
     """
     cumulative = 0.0
+    prev = 0.0
     for i, ncf in enumerate(ncf_list):
         prev = cumulative
         cumulative += ncf
-        if prev < 0 and cumulative >= 0:
-            fraction = -prev / ncf if ncf != 0 else 0
-            return (i - 1) + fraction  # 0-indexed; year i covers period i
+        if prev < 0 and cumulative >= 0 and ncf != 0:
+            # fraksi = berapa bulan dari tahun ini yang dibutuhkan
+            fraction = abs(prev) / ncf
+            # i adalah indeks (0-based), tahun produksi dimulai i=1
+            # POT dalam satuan "tahun project" = (i-1) + fraction
+            # tapi karena tahun 0 adalah investasi, POT = (i-1) + fraction
+            return (i - 1) + fraction
         elif cumulative >= 0 and i == 0:
             return 0.0
-    return float("nan")  # never paid out
+    return float("nan")  # tidak pernah balik modal
 
 
 def net_present_value(ncf_list: list[float], discount_rate: float) -> float:
-    """NPV = Σ NCF_t / (1+r)^t"""
+    """NPV = Σ NCF_t / (1+r)^t  (t dari 0 sampai N)"""
     return sum(ncf / ((1 + discount_rate) ** t) for t, ncf in enumerate(ncf_list))
 
 
 def rate_of_return(ncf_list: list[float], tol: float = 1e-6, max_iter: int = 2000) -> float:
     """
-    Find r such that NPV = 0, using bisection method.
-    Returns ROR as decimal (e.g. 0.4693).
-    Returns NaN if not solvable.
+    Cari r sehingga NPV = 0, menggunakan metode bisection.
+    Kembalikan ROR sebagai desimal (mis. 0.4693 = 46.93%).
+    Kembalikan NaN jika tidak dapat diselesaikan.
     """
-    # Check if solution exists: need sign change
     npv_low = net_present_value(ncf_list, 0.0)
     npv_high = net_present_value(ncf_list, 9.99)  # 999%
 
@@ -52,16 +65,23 @@ def rate_of_return(ncf_list: list[float], tol: float = 1e-6, max_iter: int = 200
             npv_low = npv_mid
     return (lo + hi) / 2
 
+def discounted_pir(
+    discounted_cashflows: list[float],
+    investment: float
+) -> float:
+    """
+    DPR = PV Positive Cash Flow / Investment
+    """
 
-def discounted_pir(npv: float, investment: float) -> float:
-    """DPR = NPV / Total Investment"""
     if investment == 0:
         return float("nan")
-    return npv / investment
 
+    pv_positive = sum(v for v in discounted_cashflows if v > 0)
+
+    return pv_positive / investment
 
 def profit_investment_ratio(ncf_list: list[float], investment: float) -> float:
-    """PIR = Σ NCF_undiscounted / Investment"""
+    """PIR = Σ NCF_undiscounted / Investasi"""
     if investment == 0:
         return float("nan")
     total = sum(ncf_list)
@@ -69,27 +89,42 @@ def profit_investment_ratio(ncf_list: list[float], investment: float) -> float:
 
 
 def discounted_ncf(ncf_list: list[float], discount_rate: float) -> list[float]:
-    """Return list of discounted NCF per year."""
+    """Kembalikan list NCF discounted per tahun."""
     return [ncf / ((1 + discount_rate) ** t) for t, ncf in enumerate(ncf_list)]
-
 
 def compute_all_indicators(
     ncf_list: list[float],
     investment: float,
     discount_rate: float,
 ) -> dict:
-    """Compute POT, NPV, ROR, DPR, PIR in one call."""
+    """Hitung POT, NPV, ROR, DPR, PIR sekaligus."""
+
     pot = pay_out_time(ncf_list)
     npv = net_present_value(ncf_list, discount_rate)
     ror = rate_of_return(ncf_list)
-    dpr = discounted_pir(npv, investment)
+
+    # hitung discounted cash flow per tahun
+    disc_cf = discounted_ncf(ncf_list, discount_rate)
+
+    # DPR baru
+    dpr = discounted_pir(disc_cf, investment)
+
     pir = profit_investment_ratio(ncf_list, investment)
 
-    # Format POT nicely
+    # Format POT ke "X tahun Y bulan"
     if not math.isnan(pot):
+
         pot_years = int(pot)
+
         pot_months = round((pot - pot_years) * 12)
+
+        # Koreksi jika bulan = 12
+        if pot_months == 12:
+            pot_years += 1
+            pot_months = 0
+
         pot_str = f"{pot_years} tahun {pot_months} bulan"
+
     else:
         pot_str = "Tidak tercapai"
 

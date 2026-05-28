@@ -2,44 +2,47 @@
 
 /* ── DESIGN SYSTEM & CONSTANTS ── */
 :root {
-  /* Colors - Dark Mode Theme (GitHub Style) */
-  --bg-base: #0d1117;
-  
-  --bg-blob-1: transparent;
-  --bg-blob-2: transparent;
-  --bg-blob-3: transparent;
-  --bg-blob-4: transparent;
-  --bg-blob-5: transparent;
 
-  --glass: #161b22;
-  --glass-hover: #21262d;
-  --glass-strong: #30363d;
-  --glass-border: #30363d;
-  --glass-border-hover: #8b949e;
-  --glass-gradient: none;
+  /* ===== PROFESSIONAL ENGINEERING DARK ===== */
 
-  --text: #c9d1d9;
-  --text-dim: #8b949e;
+  --bg-base: #0f172a;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1e293b;
 
-  --accent: #58a6ff;                      /* GitHub Blue */
-  --accent-hover: #3182ce;
-  --accent-glow: rgba(88, 166, 255, 0.15);
-  
-  --green: #238636;                       /* GitHub Green */
-  --green-glow: rgba(35, 134, 54, 0.15);
-  --red: #da3633;                         /* GitHub Red */
-  --red-glow: rgba(218, 54, 51, 0.15);
-  --amber: #d29922;
-  --blue: #58a6ff;
+  --glass: rgba(15, 23, 42, 0.88);
+  --glass-hover: rgba(30, 41, 59, 0.95);
+  --glass-strong: #1e293b;
 
-  --input-bg: #010409;
-  --input-focus: #0d1117;
-  --shadow-main: 0 8px 24px rgba(0, 0, 0, 0.2);
+  --glass-border: rgba(148, 163, 184, 0.12);
+  --glass-border-hover: rgba(148, 163, 184, 0.25);
+
+  --text: #f8fafc;
+  --text-dim: #94a3b8;
+
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-glow: rgba(56, 189, 248, 0.15);
+
+  --green: #22c55e;
+  --green-glow: rgba(34, 197, 94, 0.15);
+
+  --red: #ef4444;
+  --red-glow: rgba(239, 68, 68, 0.15);
+
+  --amber: #f59e0b;
+  --blue: #38bdf8;
+
+  --input-bg: #0b1220;
+  --input-focus: #111827;
+
+  --shadow-main:
+    0 10px 30px rgba(0,0,0,0.25);
 
   --font: 'Plus Jakarta Sans', sans-serif;
   --mono: 'JetBrains Mono', monospace;
-  --radius: 8px;
-  --blur: none;
+
+  --radius: 18px;
+  --blur: blur(14px);
 }
 
 /* ── LIGHT MODE OVERRIDES ── */
@@ -102,6 +105,15 @@ body {
   position: relative;
   overflow-x: hidden;
   transition: background-color 0.5s ease, color 0.4s ease;
+
+  background-image:
+  radial-gradient(circle at top left,
+  rgba(56,189,248,0.08),
+  transparent 30%),
+
+  radial-gradient(circle at bottom right,
+  rgba(14,165,233,0.05),
+  transparent 35%);
 }
 
 [data-theme="light"] body {
@@ -271,7 +283,7 @@ header:hover {
 }
 
 .nav-link {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--text-dim);
   text-decoration: none;
@@ -358,11 +370,12 @@ header:hover {
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
+  border-radius: 22px;
   box-shadow: var(--shadow-main);
   overflow: hidden;
   margin-bottom: 1.5rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(14px);
 }
 
 .panel:hover {
@@ -465,9 +478,18 @@ select option {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-  color: #fff;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  background: linear-gradient(
+    135deg,
+    #0ea5e9,
+    #0284c7
+  );
+
+  color: white;
+
+  box-shadow:
+    0 8px 20px rgba(14,165,233,0.18);
+
+  border: none;
 }
 
 .btn-primary:hover {
@@ -543,20 +565,9 @@ thead {
 }
 
 th {
-  background: var(--glass-strong);
-  background-image: var(--glass-gradient);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 8px 10px;
-  text-align: right;
-  font-family: var(--font);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-dim);
-  border-bottom: 1px solid var(--glass-border);
-  white-space: nowrap;
 }
 
 th:first-child {
@@ -564,12 +575,16 @@ th:first-child {
 }
 
 td {
-  padding: 6px 10px;
+  padding: 12px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background 0.2s;
   font-family: var(--mono);
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   text-align: right;
+}
+
+tbody tr:nth-child(even) td {
+  background: rgba(255,255,255,0.015);
 }
 
 [data-theme="light"] td {
@@ -637,7 +652,6 @@ td input:focus {
 .del-btn:hover {
   opacity: 1;
   background: var(--red-glow);
-  transform: scale(1.15) rotate(90deg);
 }
 
 /* ── CAROUSALS & KPI CARDS ── */
@@ -655,7 +669,7 @@ td input:focus {
   -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-main);
@@ -687,21 +701,21 @@ td input:focus {
 }
 
 .kpi-label {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
-  margin-bottom: 0.6rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: var(--text-dim);
 }
 
 .kpi-value {
   font-family: var(--mono);
-  font-size: 1.65rem;
+  font-size: clamp(2rem, 3vw, 3rem);
   font-weight: 800;
   color: var(--text);
-  line-height: 1.1;
-  transition: color 0.3s ease;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  margin-top: 0.4rem;
 }
 
 .kpi-sub {
@@ -723,12 +737,10 @@ td input:focus {
 
 .kpi.feasible .kpi-value {
   color: var(--green);
-  text-shadow: 0 0 15px rgba(52, 211, 153, 0.25);
 }
 
 .kpi.not-feasible .kpi-value {
   color: var(--red);
-  text-shadow: 0 0 15px rgba(244, 63, 94, 0.25);
 }
 
 .kpi.feasible::before {
@@ -756,6 +768,8 @@ td input:focus {
   font-weight: 700;
   box-shadow: var(--shadow-main);
   transition: all 0.3s ease;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
 }
 
 .verdict.go {
@@ -809,12 +823,10 @@ td input:focus {
 
 .neg {
   color: var(--red);
-  text-shadow: 0 0 10px rgba(244, 63, 94, 0.1);
 }
 
 .pos {
   color: var(--green);
-  text-shadow: 0 0 10px rgba(52, 211, 153, 0.1);
 }
 
 /* ── RESULT SECTIONS ── */
@@ -824,8 +836,9 @@ td input:focus {
 }
 
 .section-heading {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   margin-bottom: 1.25rem;
   color: var(--text);
   display: flex;
@@ -883,6 +896,7 @@ td input:focus {
   padding: 1.75rem;
   margin-bottom: 2rem;
   box-shadow: var(--shadow-main);
+  background: rgba(15,23,42,0.75);
 }
 
 canvas {
@@ -1290,7 +1304,6 @@ canvas {
 .modal-close:hover {
   color: var(--red);
   background: var(--red-glow);
-  transform: rotate(90deg);
 }
 
 .modal-body {
