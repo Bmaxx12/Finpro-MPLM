@@ -495,30 +495,28 @@ function generateDynamicInsights(data) {
   const cf = data.cashflow;
   const ind = data.indicators;
   
-  // 1. Cash Flow Insight
+  // bikin teks insight lebih gampang dibaca orang awam
   const totalTax = cf.reduce((s, r) => s + (r.tax || 0), 0);
   const totalOpex = cf.reduce((s, r) => s + (r.opex || 0), 0);
   const totalCapital = cf.reduce((s, r) => s + (r.capital || 0), 0);
   const cfBox = document.getElementById('insight-cashflow');
   const cfText = document.getElementById('insight-text-cashflow');
   if (cfBox && cfText) {
-    cfText.innerHTML = `Analisis Cash Flow menunjukkan total pengeluaran kapital sebesar <strong>$${fmt(totalCapital, 1)}</strong> dan operasi sebesar <strong>$${fmt(totalOpex, 1)}</strong>. Proyek ini berkontribusi pada penerimaan negara melalui pajak total sebesar <strong>$${fmt(totalTax, 1)}</strong> selama masa operasinya.`;
+    cfText.innerHTML = `Proyek ini membutuhkan alokasi pengeluaran modal (<em>Capital Expenditure</em>) awal sebesar <strong>$${fmt(totalCapital, 1)}</strong> untuk pembangunan fasilitas produksi. Selama periode umur operasionalnya, estimasi total biaya operasional (<em>Opex</em>) yang diperlukan mencapai <strong>$${fmt(totalOpex, 1)}</strong>. Selain mencetak pendapatan kotor, proyek ini juga memproyeksikan kontribusi pajak kepada negara sebesar total <strong>$${fmt(totalTax, 1)}</strong>, yang menunjukkan kepatuhan dan kelayakan komersial yang baik.`;
     cfBox.style.display = 'flex';
   }
 
-  // 2. NCF Insight
   const ncfBox = document.getElementById('insight-ncf');
   const ncfText = document.getElementById('insight-text-ncf');
   if (ncfBox && ncfText) {
     if (ind.feasible) {
-      ncfText.innerHTML = `Kurva kumulatif menukik di awal karena investasi kapital, kemudian berbalik positif pada <strong>Tahun ke-${ind.POT_str ? ind.POT_str.split(' ')[0] : '?'}</strong>. Net Present Value tercapai di angka <strong>$${fmt(ind.NPV, 1)}</strong> dengan tingkat pengembalian (IRR) sebesar <strong>${(ind.ROR*100).toFixed(2)}%</strong>.`;
+      ncfText.innerHTML = `Berdasarkan proyeksi arus kas, seluruh biaya modal awal diperkirakan akan mencapai titik impas (<em>Pay Out Time</em>) pada <strong>Tahun ke-${ind.POT_str ? ind.POT_str.split(' ')[0] : '?'}</strong>. Proyek ini dinyatakan LAYAK (<em>Feasible</em>) dengan proyeksi keuntungan bersih masa kini (Net Present Value/NPV) mencapai <strong>$${fmt(ind.NPV, 1)}</strong>. Selain itu, tingkat pengembalian modal (IRR) berada di angka <strong>${(ind.ROR*100).toFixed(2)}%</strong> per tahun, yang menunjukkan indikator keekonomian yang solid.`;
     } else {
-      ncfText.innerHTML = `Proyek ini <strong>tidak layak (NPV negatif)</strong>. Kurva kumulatif gagal menembus titik impas (Break-even) hingga akhir umur proyek. Evaluasi ulang pengeluaran kapital atau batas minimum ekonomi diperlukan.`;
+      ncfText.innerHTML = `Sayangnya, proyeksi keekonomian menunjukkan bahwa proyek ini <strong>TIDAK LAYAK</strong> secara komersial. Arus kas kumulatif gagal mencapai titik impas (<em>Pay Out Time</em>) hingga akhir masa produksi, menghasilkan Net Present Value (NPV) yang negatif. Evaluasi ulang terhadap struktur pengeluaran modal (<em>Capital</em>) atau asumsi harga minyak bumi (<em>Oil Price</em>) sangat direkomendasikan sebelum mengambil keputusan final.`;
     }
     ncfBox.style.display = 'flex';
   }
 
-  // 3. Prod Insight
   const prodBox = document.getElementById('insight-prod');
   const prodText = document.getElementById('insight-text-prod');
   if (prodBox && prodText) {
@@ -530,11 +528,10 @@ function generateDynamicInsights(data) {
         peakYear = r.tahun;
       }
     });
-    prodText.innerHTML = `Puncak produksi (Peak) diproyeksikan terjadi pada <strong>Tahun ke-${peakYear}</strong> sebesar <strong>${fmt(maxProd, 1)} MBbl</strong>. Setelah fase tersebut, produksi akan mengalami tren penurunan (*decline*) seiring berkurangnya tekanan reservoir.`;
+    prodText.innerHTML = `Profil produksi sumur menunjukkan bahwa volume produksi puncak (<em>Peak Production</em>) akan tercapai pada <strong>Tahun ke-${peakYear}</strong> dengan total ekstraksi <strong>${fmt(maxProd, 1)} Ribu Barel (MBbl)</strong>. Melewati fase puncak tersebut, sumur akan memasuki periode penurunan produksi alami (<em>Decline Phase</em>) sejalan dengan berkurangnya tekanan reservoar seiring berjalannya waktu eksploitasi.`;
     prodBox.style.display = 'flex';
   }
 
-  // 4. Depr Insight
   const deprBox = document.getElementById('insight-depr');
   const deprText = document.getElementById('insight-text-depr');
   const methodNames = {
@@ -550,7 +547,7 @@ function generateDynamicInsights(data) {
     if (deprArr.length > 0 && deprArr[deprArr.length-1] === 0) {
       endYear = deprArr.findIndex(v => v === 0);
     }
-    deprText.innerHTML = `Skema <strong>${method}</strong> membebankan biaya depresiasi aset kapital selama umur ekonomis <strong>${deprLife} tahun</strong>. Hal ini memengaruhi pengurangan (*tax deduction*) terhadap Pajak Pendapatan di tahun-tahun awal beroperasinya lapangan.`;
+    deprText.innerHTML = `Nilai buku aset fasilitas produksi diperhitungkan menggunakan metode depresiasi <strong>${method}</strong> dengan rentang umur ekonomis <strong>${deprLife} tahun</strong>. Beban penyusutan ini bukan merupakan pengeluaran tunai (<em>non-cash expense</em>), namun berperan krusial sebagai pengurang penghasilan kena pajak (<em>Tax Deduction</em>) yang secara otomatis akan meningkatkan arus kas bersih proyek di tahun-tahun awal operasi.`;
     deprBox.style.display = 'flex';
   }
 }
