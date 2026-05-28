@@ -41,7 +41,7 @@ fm_calculator/
 ## Instalasi & Menjalankan
 
 ### 1. Prasyarat
-- Python 3.9+
+- Python 3.9
 
 ### 2. Install dependency
 
