@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="/static/style.css?v=101"/>
+<link rel="stylesheet" href="/static/style.css?v=15"/>
 <link rel="stylesheet" href="/static/layout.css?v=102"/>
 </head>
 <body>
@@ -80,8 +80,8 @@
           <a href="#" class="nav-link">
             <i data-lucide="history" class="nav-icon"></i> <span class="nav-text">History</span>
           </a>
-          <a href="#" class="nav-link">
-            <i data-lucide="help-circle" class="nav-icon"></i> <span class="nav-text">Bantuan</span>
+          <a class="nav-link" id="nav-guide" onclick="goToGuide()">
+            <i data-lucide="help-circle" class="nav-icon"></i> <span class="nav-text">Panduan</span>
           </a>
         </nav>
       </div>
@@ -387,11 +387,116 @@
     </section>
   </div>
 </div>
+
+    <!-- ========== PAGE: GUIDE ========== -->
+    <section id="page-guide" class="page-section" style="display: none; padding: 2rem 3rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--text);"><i data-lucide="book-open" class="icon-blue"></i> Panduan Sistem</h2>
+        <button class="btn btn-secondary" onclick="goToProjects()">
+          <i data-lucide="arrow-left" class="btn-icon"></i> Kembali ke Dashboard
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        
+        <!-- Langkah Penggunaan -->
+        <div class="panel">
+          <div class="panel-header"><i data-lucide="list-ordered" class="panel-icon icon-green"></i> Cara Penggunaan Sistem</div>
+          <div class="panel-body">
+            <p style="color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.6;">Ikuti langkah-langkah sistematis berikut untuk melakukan evaluasi keekonomian lapangan migas Anda dari awal hingga akhir:</p>
+            
+            <div class="guide-timeline">
+              <!-- Step 1 -->
+              <div class="timeline-item">
+                <div class="timeline-badge">1</div>
+                <div class="timeline-content">
+                  <h4><i data-lucide="folder-plus" class="icon-blue"></i> Buat Proyek Baru</h4>
+                  <p>Di halaman utama (Dashboard), klik tombol "Buat Project". Berikan nama untuk lapangan migas yang akan dianalisis beserta deskripsi singkatnya. Proyek ini akan otomatis tersimpan di daftar Anda.</p>
+                </div>
+              </div>
+
+              <!-- Step 2 -->
+              <div class="timeline-item">
+                <div class="timeline-badge">2</div>
+                <div class="timeline-content">
+                  <h4><i data-lucide="sliders" class="icon-green"></i> Atur Parameter Keekonomian</h4>
+                  <p>Setelah masuk ke detail proyek, perhatikan panel sebelah kiri. Di sinilah Anda mengatur "aturan main". Masukkan besaran persentase Pajak, Discount Rate, Metode Depresiasi, Umur Depresiasi, dan Basis Depresiasi.</p>
+                </div>
+              </div>
+
+              <!-- Step 3 -->
+              <div class="timeline-item">
+                <div class="timeline-badge">3</div>
+                <div class="timeline-content">
+                  <h4><i data-lucide="dollar-sign" class="icon-yellow"></i> Input Data Investasi (Tahun ke-0)</h4>
+                  <p>Fokus ke tabel data di tengah. Pada baris pertama (Tahun 0), masukkan biaya pengeluaran awal sebelum sumur beroperasi (Capital dan Non-Capital). Biarkan kolom produksi dan harga minyak di angka nol.</p>
+                </div>
+              </div>
+
+              <!-- Step 4 -->
+              <div class="timeline-item">
+                <div class="timeline-badge">4</div>
+                <div class="timeline-content">
+                  <h4><i data-lucide="rocket" class="icon-blue"></i> Auto-Generate Proyeksi (Decline Curve)</h4>
+                  <p>Tambahkan baris baru untuk Tahun ke-1, lalu isi perkiraan produksi awal, harga minyak, dan biaya operasional. Setelah itu, cukup klik tombol hijau "Auto-Generate (Decline Curve)". Sistem akan meramalkan sisa umur sumur secara otomatis.</p>
+                </div>
+              </div>
+
+              <!-- Step 5 -->
+              <div class="timeline-item">
+                <div class="timeline-badge">5</div>
+                <div class="timeline-content">
+                  <h4><i data-lucide="pie-chart" class="icon-red"></i> Analisis Hasil & Ekspor</h4>
+                  <p>Gulir ke bagian paling bawah. Sistem akan menyajikan kesimpulan analitis secara instan apakah proyek Anda "LAYAK" atau "TIDAK LAYAK", lengkap dengan kurva Cash Flow. Klik "Export CSV" untuk mengunduh laporan.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Glosarium Depresiasi -->
+        <div class="panel">
+          <div class="panel-header"><i data-lucide="book" class="panel-icon icon-yellow"></i> Glosarium 5 Metode Depresiasi</div>
+          <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            
+            <p style="color: var(--text-dim); margin-bottom: 0.5rem; line-height: 1.6;">Pahami kelima metode penyusutan (depresiasi) standar industri untuk menentukan strategi pajak yang paling optimal bagi proyek Anda:</p>
+
+            <div class="glossary-card">
+              <h4>Straight Line (Garis Lurus)</h4>
+              <p>Metode paling sederhana. Nilai penyusutan dibagi rata setiap tahunnya. Sangat cocok untuk aset fasilitas yang pemakaiannya stabil dan konsisten sepanjang umur ekonomisnya.</p>
+            </div>
+
+            <div class="glossary-card">
+              <h4>Declining Balance (Saldo Menurun)</h4>
+              <p>Membebankan penyusutan lebih besar di awal karena mengasumsikan alat baru lebih cepat turun nilainya. Saldo aset selalu dikalikan dengan persentase tetap setiap tahunnya.</p>
+            </div>
+
+            <div class="glossary-card">
+              <h4>Double Declining</h4>
+              <p>Sama seperti Saldo Menurun, namun persentasenya dikalikan dua kali lipat secara agresif. Merupakan taktik jitu untuk mengurangi pajak penghasilan secara masif di awal masa produksi.</p>
+            </div>
+
+            <div class="glossary-card">
+              <h4>Unit of Production (Satuan Produksi)</h4>
+              <p>Sangat proporsional dan adil. Penyusutan tidak dipatok oleh waktu, melainkan volume. Semakin banyak barel minyak yang berhasil dipompa, semakin besar nilai aset yang disusutkan tahun itu.</p>
+            </div>
+
+            <div class="glossary-card">
+              <h4>Sum of Year Digits (Jumlah Angka Tahun)</h4>
+              <p>Metode depresiasi yang dipercepat. Menggunakan perhitungan pecahan di mana pembilangnya adalah sisa umur manfaat, dan penyebutnya adalah total (penjumlahan) dari angka-angka umur proyek.</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
 </div>
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="/static/app.js?v=10"></script>
+<script src="/static/app.js?v=12"></script>
 </body>
 </html>

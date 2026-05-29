@@ -23,6 +23,8 @@ function showToast(msg, type='success'){
 function goToProjects(){
   document.getElementById('page-projects').style.display = '';
   document.getElementById('page-detail').style.display = 'none';
+  const pageGuide = document.getElementById('page-guide');
+  if(pageGuide) pageGuide.style.display = 'none';
   const shortcuts = document.getElementById('sidebar-shortcuts');
   if(shortcuts) shortcuts.style.display = 'none';
   currentProjectId = null;
@@ -33,6 +35,8 @@ function goToProject(id){
   currentProjectId = id;
   document.getElementById('page-projects').style.display = 'none';
   document.getElementById('page-detail').style.display = '';
+  const pageGuide = document.getElementById('page-guide');
+  if(pageGuide) pageGuide.style.display = 'none';
   document.getElementById('results-section').style.display = 'none';
   document.getElementById('btn-export').disabled = true;
   const shortcuts = document.getElementById('sidebar-shortcuts');
@@ -40,6 +44,16 @@ function goToProject(id){
   lastResult = null;
   window.regressionParams = null;
   loadProjectDetail(id);
+}
+
+// bikin fungsi buat buka halaman panduan
+function goToGuide(){
+  document.getElementById('page-projects').style.display = 'none';
+  document.getElementById('page-detail').style.display = 'none';
+  const pageGuide = document.getElementById('page-guide');
+  if(pageGuide) pageGuide.style.display = 'block';
+  const shortcuts = document.getElementById('sidebar-shortcuts');
+  if(shortcuts) shortcuts.style.display = 'none';
 }
 
 // ── Modal ────────────────────────────────────────────────────────────────────
