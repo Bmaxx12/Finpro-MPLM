@@ -802,14 +802,20 @@ td input:focus {
   overflow-x: auto;
   overflow-y: auto;
   max-height: 65vh;
-  background: var(--glass);
-  background-image: var(--glass-gradient);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
+  background: var(--glass-strong);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
-  padding: 4px;
+  padding: 0;
   box-shadow: var(--shadow-main);
+  isolation: isolate;
+}
+
+.result-table-wrap .result-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 2px 0 var(--bg-tertiary);
 }
 
 .result-table td:first-child {
@@ -893,16 +899,16 @@ td input:focus {
   position: relative;
   height: 40vh; /* Dynamic height relative to viewport */
   min-height: 350px;
-  background: var(--glass);
-  background-image: var(--glass-gradient);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
+  background: var(--glass-strong);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   padding: 1.75rem;
   margin-bottom: 2rem;
   box-shadow: var(--shadow-main);
-  background: rgba(15,23,42,0.75);
+}
+
+[data-theme="light"] .chart-wrap {
+  background: var(--bg-secondary);
 }
 
 canvas {

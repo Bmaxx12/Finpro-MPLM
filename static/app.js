@@ -602,6 +602,7 @@ function renderChart(cf){
   const cAccentGlow = s.getPropertyValue('--accent-glow').trim() || 'rgba(99, 102, 241, 0.2)';
   const cGreen = s.getPropertyValue('--green').trim() || '#34d399';
   const cRed = s.getPropertyValue('--red').trim() || '#f43f5e';
+  const cTooltipBg = s.getPropertyValue('--bg-secondary').trim() || '#161b22';
 
   if(ncfChart) ncfChart.destroy();
   const ctx = document.getElementById('ncf-chart').getContext('2d');
@@ -637,7 +638,7 @@ function renderChart(cf){
       plugins:{
         legend:{ labels:{ color: cText, font:{family:'Plus Jakarta Sans', size:12, weight:'600'} } },
         tooltip: {
-          backgroundColor:'#0d1117', borderColor:cBorder, borderWidth:1,
+          backgroundColor: cTooltipBg, borderColor:cBorder, borderWidth:1,
           cornerRadius:10, padding:12, titleColor:cAccent, bodyColor:cText,
           titleFont: {family: 'Plus Jakarta Sans', size: 12, weight: 'bold'},
           bodyFont: {family: 'JetBrains Mono', size: 11},
@@ -720,6 +721,7 @@ function renderProdChart(cf) {
   const cBorder = s.getPropertyValue('--glass-border').trim() || 'rgba(255,255,255,0.1)';
   const cAccent = s.getPropertyValue('--accent').trim() || '#818cf8';
   const cAccentGlow = s.getPropertyValue('--accent-glow').trim() || 'rgba(99, 102, 241, 0.2)';
+  const cTooltipBg = s.getPropertyValue('--bg-secondary').trim() || '#161b22';
 
   if (prodChart) prodChart.destroy();
   const ctx = document.getElementById('prod-chart').getContext('2d');
@@ -763,7 +765,7 @@ function renderProdChart(cf) {
       plugins: {
         legend: { labels: { color: cText, font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' } } },
         tooltip: {
-          backgroundColor: '#0d1117',
+          backgroundColor: cTooltipBg,
           borderColor: cBorder,
           borderWidth: 1, cornerRadius: 10, padding: 12,
           titleColor: cAccent,
