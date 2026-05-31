@@ -19,8 +19,21 @@ function showToast(msg, type='success'){
   setTimeout(()=>t.classList.remove('show'), 3000);
 }
 
+function setActiveNav(navId) {
+  // Hapus class active dari semua menu utama
+  document.querySelectorAll('.sidebar-section .sidebar-nav .nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  // Tambahkan class active ke menu yang sesuai
+  if(navId) {
+    const activeEl = document.getElementById(navId);
+    if(activeEl) activeEl.classList.add('active');
+  }
+}
+
 // ── Navigation ───────────────────────────────────────────────────────────────
 function goToProjects(){
+  setActiveNav('nav-projects');
   document.getElementById('page-projects').style.display = '';
   document.getElementById('page-detail').style.display = 'none';
   if(document.getElementById('page-history')) document.getElementById('page-history').style.display = 'none';
@@ -33,6 +46,7 @@ function goToProjects(){
 }
 
 function goToProject(id, historyId = null){
+  setActiveNav('nav-projects');
   currentProjectId = id;
   document.getElementById('page-projects').style.display = 'none';
   document.getElementById('page-detail').style.display = '';
@@ -49,6 +63,7 @@ function goToProject(id, historyId = null){
 }
 
 function goToHistory(){
+  setActiveNav('nav-history');
   document.getElementById('page-projects').style.display = 'none';
   document.getElementById('page-detail').style.display = 'none';
   if(document.getElementById('page-guide')) document.getElementById('page-guide').style.display = 'none';
@@ -59,6 +74,7 @@ function goToHistory(){
 
 // bikin fungsi buat buka halaman panduan
 function goToGuide(){
+  setActiveNav('nav-guide');
   document.getElementById('page-projects').style.display = 'none';
   document.getElementById('page-detail').style.display = 'none';
   if(document.getElementById('page-history')) document.getElementById('page-history').style.display = 'none';

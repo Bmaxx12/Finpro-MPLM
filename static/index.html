@@ -71,7 +71,7 @@
           <a class="nav-link active" id="nav-projects" onclick="goToProjects()">
             <i data-lucide="layout-dashboard" class="nav-icon"></i> <span class="nav-text">Dashboard</span>
           </a>
-          <a href="#" class="nav-link">
+          <a href="#" class="nav-link" id="nav-analytics" onclick="showToast('Fitur Analytics masih dalam pengembangan', 'warning'); setActiveNav('nav-analytics');">
             <i data-lucide="pie-chart" class="nav-icon"></i> <span class="nav-text">Analytics</span>
           </a>
           <a class="nav-link" id="nav-history" onclick="goToHistory()">
@@ -86,16 +86,16 @@
       <div class="sidebar-section" id="sidebar-shortcuts" style="display: none;">
         <div class="sidebar-label">Pintasan Analisis</div>
         <nav class="sidebar-nav">
-          <a href="#tab-cashflow" class="nav-link">
+          <a href="#tab-cashflow" class="nav-link" id="shortcut-cashflow" onclick="setActiveNav('shortcut-cashflow')">
             <i data-lucide="table" class="nav-icon"></i> <span class="nav-text">Tabel Cash Flow</span>
           </a>
-          <a href="#tab-chart" class="nav-link">
+          <a href="#tab-chart" class="nav-link" id="shortcut-chart" onclick="setActiveNav('shortcut-chart')">
             <i data-lucide="bar-chart-2" class="nav-icon"></i> <span class="nav-text">Grafik NCF</span>
           </a>
-          <a href="#tab-prod-chart" class="nav-link">
+          <a href="#tab-prod-chart" class="nav-link" id="shortcut-prod" onclick="setActiveNav('shortcut-prod')">
             <i data-lucide="trending-up" class="nav-icon"></i> <span class="nav-text">Grafik Produksi</span>
           </a>
-          <a href="#tab-depr" class="nav-link">
+          <a href="#tab-depr" class="nav-link" id="shortcut-depr" onclick="setActiveNav('shortcut-depr')">
             <i data-lucide="calendar" class="nav-icon"></i> <span class="nav-text">Jadwal Depresiasi</span>
           </a>
         </nav>
@@ -536,6 +536,6 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="/static/app.js?v=13"></script>
+<script src="/static/app.js?v=14"></script>
 </body>
 </html>
