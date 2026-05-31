@@ -150,6 +150,30 @@ async def list_projects():
         "row_count": len(p.get("rows", [])),
     } for p in projects])
 
+@app.get("/api/history")
+async def get_history():
+    projects = _load_projects()
+    all_history = []
+    for p in projects:
+        if "history" in p:
+            for h in p["history"]:
+                # Sertakan info project
+                item = {
+                    "project_id": p["id"],
+                    "project_name": p["name"],
+                    "history_id": h["id"],
+                    "timestamp": h["timestamp"],
+                    "params": h["params"],
+                    "npv": h["result"]["indicators"].get("NPV"),
+                    "ror": h["result"]["indicators"].get("ROR"),
+                    "feasible": h["result"]["indicators"].get("feasible", False)
+                }
+                all_history.append(item)
+                
+    # Sort descending by timestamp
+    all_history.sort(key=lambda x: x["timestamp"], reverse=True)
+    return JSONResponse(content=all_history)
+
 @app.post("/api/projects")
 async def create_project(req: ProjectCreate):
     projects = _load_projects()
@@ -226,6 +250,22 @@ async def calculate_project(project_id: str):
     try:
         result = run_calculation(calc_req)
         p["last_result"] = result
+        
+        # Simpan ke history
+        if "history" not in p:
+            p["history"] = []
+            
+        history_id = str(uuid.uuid4())[:8]
+        history_item = {
+            "id": history_id,
+            "timestamp": datetime.now().isoformat(),
+            "params": result["params"],
+            "result": result
+        }
+        p["history"].insert(0, history_item)
+        if len(p["history"]) > 30: # Limit history
+            p["history"] = p["history"][:30]
+            
         p["updated_at"] = datetime.now().isoformat()
         _save_projects(projects)
         return JSONResponse(content=result)

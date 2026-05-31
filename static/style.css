@@ -1545,3 +1545,15 @@ canvas {
   font-size: 0.95rem;
   line-height: 1.6;
 }
+
+/* ── HISTORY TABLE OVERRIDES ── */
+#page-history table th,
+#page-history table td {
+  text-align: left !important;
+  font-family: var(--font) !important;
+}
+
+#page-history table th:first-child,
+#page-history table td:first-child {
+  text-align: left !important;
+}

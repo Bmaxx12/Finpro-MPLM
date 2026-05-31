@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="/static/style.css?v=15"/>
+<link rel="stylesheet" href="/static/style.css?v=16"/>
 <link rel="stylesheet" href="/static/layout.css?v=102"/>
 </head>
 <body>
@@ -71,13 +71,10 @@
           <a class="nav-link active" id="nav-projects" onclick="goToProjects()">
             <i data-lucide="layout-dashboard" class="nav-icon"></i> <span class="nav-text">Dashboard</span>
           </a>
-          <a href="/api/template-csv" class="nav-link">
-            <i data-lucide="file-down" class="nav-icon"></i> <span class="nav-text">Template CSV</span>
-          </a>
           <a href="#" class="nav-link">
             <i data-lucide="pie-chart" class="nav-icon"></i> <span class="nav-text">Analytics</span>
           </a>
-          <a href="#" class="nav-link">
+          <a class="nav-link" id="nav-history" onclick="goToHistory()">
             <i data-lucide="history" class="nav-icon"></i> <span class="nav-text">History</span>
           </a>
           <a class="nav-link" id="nav-guide" onclick="goToGuide()">
@@ -141,9 +138,14 @@
         <div class="hero-content">
           <h1>Kelola Perhitungan Lapangan Migas Anda</h1>
           <p>Dapatkan insight NPV, IRR, dan POT secara instan dengan visualisasi yang mudah dipahami.</p>
-          <button class="btn btn-primary btn-lg" onclick="openModal()" style="margin-top:1.5rem">
-            Buat Project Baru
-          </button>
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: flex-start;">
+            <button class="btn btn-primary btn-lg" onclick="openModal()">
+              Buat Project Baru
+            </button>
+            <a href="/api/template-csv" class="btn btn-secondary btn-lg" style="text-decoration: none; color: inherit;">
+              <i data-lucide="file-down" class="btn-icon"></i> Unduh Template CSV
+            </a>
+          </div>
         </div>
       </div>
       
@@ -165,6 +167,40 @@
         <button class="btn btn-primary" onclick="openModal()">
           <i data-lucide="plus" class="btn-icon"></i> Buat Project Baru
         </button>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: HISTORY ========== -->
+    <div id="page-history" class="page-container" style="display:none; padding: 2rem 3rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--text);"><i data-lucide="history" class="icon-blue"></i> Riwayat Kalkulasi</h2>
+        <button class="btn btn-secondary" onclick="goToProjects()">
+          <i data-lucide="arrow-left" class="btn-icon"></i> Kembali ke Dashboard
+        </button>
+      </div>
+      <div class="panel">
+        <div class="panel-body" style="padding:0;">
+          <table class="result-table" style="margin:0; width:100%; text-align:left;">
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Nama Project</th>
+                <th>Metode Depresiasi</th>
+                <th>NPV ($)</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody">
+              <!-- populated by js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="history-empty" class="empty-state" style="display:none; margin-top:2rem;">
+        <div class="empty-icon-wrap"><i data-lucide="clock" class="empty-icon"></i></div>
+        <div class="empty-title">Belum ada riwayat</div>
+        <div class="empty-subtitle">Lakukan kalkulasi di dalam project untuk melihat riwayat perhitungan di sini.</div>
       </div>
     </div>
 
@@ -205,6 +241,9 @@
             <span style="font-size:.65rem;color:var(--text-dim)">Format: tahun, produksi_mbbl, harga_minyak_usd, capital_usd, non_capital_usd, opex_usd</span>
           </div>
           <input type="file" id="file-input" accept=".csv" style="display:none" onchange="uploadCSV(this)"/>
+          <a href="/api/template-csv" class="btn btn-secondary" style="width:100%; margin-top: 1rem; text-decoration: none; justify-content: center;">
+            <i data-lucide="file-down" class="btn-icon"></i> Unduh Template CSV
+          </a>
         </div>
       </div>
 
@@ -497,6 +536,6 @@
 
 <!-- Chart.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="/static/app.js?v=12"></script>
+<script src="/static/app.js?v=13"></script>
 </body>
 </html>

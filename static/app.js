@@ -23,6 +23,7 @@ function showToast(msg, type='success'){
 function goToProjects(){
   document.getElementById('page-projects').style.display = '';
   document.getElementById('page-detail').style.display = 'none';
+  if(document.getElementById('page-history')) document.getElementById('page-history').style.display = 'none';
   const pageGuide = document.getElementById('page-guide');
   if(pageGuide) pageGuide.style.display = 'none';
   const shortcuts = document.getElementById('sidebar-shortcuts');
@@ -31,10 +32,11 @@ function goToProjects(){
   loadProjectsList();
 }
 
-function goToProject(id){
+function goToProject(id, historyId = null){
   currentProjectId = id;
   document.getElementById('page-projects').style.display = 'none';
   document.getElementById('page-detail').style.display = '';
+  if(document.getElementById('page-history')) document.getElementById('page-history').style.display = 'none';
   const pageGuide = document.getElementById('page-guide');
   if(pageGuide) pageGuide.style.display = 'none';
   document.getElementById('results-section').style.display = 'none';
@@ -43,13 +45,23 @@ function goToProject(id){
   if(shortcuts) shortcuts.style.display = 'block';
   lastResult = null;
   window.regressionParams = null;
-  loadProjectDetail(id);
+  loadProjectDetail(id, historyId);
+}
+
+function goToHistory(){
+  document.getElementById('page-projects').style.display = 'none';
+  document.getElementById('page-detail').style.display = 'none';
+  if(document.getElementById('page-guide')) document.getElementById('page-guide').style.display = 'none';
+  if(document.getElementById('sidebar-shortcuts')) document.getElementById('sidebar-shortcuts').style.display = 'none';
+  if(document.getElementById('page-history')) document.getElementById('page-history').style.display = 'block';
+  loadHistoryList();
 }
 
 // bikin fungsi buat buka halaman panduan
 function goToGuide(){
   document.getElementById('page-projects').style.display = 'none';
   document.getElementById('page-detail').style.display = 'none';
+  if(document.getElementById('page-history')) document.getElementById('page-history').style.display = 'none';
   const pageGuide = document.getElementById('page-guide');
   if(pageGuide) pageGuide.style.display = 'block';
   const shortcuts = document.getElementById('sidebar-shortcuts');
@@ -157,7 +169,7 @@ async function deleteProject(id){
   }
 }
 
-async function loadProjectDetail(id){
+async function loadProjectDetail(id, historyId = null){
   showLoading(true);
   try {
     const res = await fetch(`/api/projects/${id}`);
@@ -167,15 +179,27 @@ async function loadProjectDetail(id){
     document.getElementById('project-title').textContent = p.name;
     document.getElementById('project-desc').textContent = p.description || '';
 
+    // Cari spesifik history jika diminta, jika tidak pakai parameter project dan last_result
+    let activeParams = p.params || {};
+    let activeResult = p.last_result || null;
+    
+    if(historyId && p.history) {
+      const h = p.history.find(item => item.id === historyId);
+      if(h) {
+        activeParams = h.params;
+        activeResult = h.result;
+        showToast('Memuat riwayat perhitungan...');
+      }
+    }
+
     // Load params
-    const params = p.params || {};
-    document.getElementById('depr-method').value = params.depr_method || 'declining_balance';
-    document.getElementById('depr-life').value = params.depr_life || 10;
-    document.getElementById('tax-rate').value = ((params.tax_rate || 0.52) * 100).toFixed(1);
-    document.getElementById('discount-rate').value = ((params.discount_rate || 0.15) * 100).toFixed(1);
-    document.getElementById('use-lcf').checked = params.use_lcf || false;
-    if(params.reserve_mbbl) document.getElementById('reserve-mbbl').value = params.reserve_mbbl;
-    document.getElementById('reserve-row').style.display = params.depr_method === 'unit_of_production' ? 'block' : 'none';
+    document.getElementById('depr-method').value = activeParams.depr_method || 'declining_balance';
+    document.getElementById('depr-life').value = activeParams.depr_life || 10;
+    document.getElementById('tax-rate').value = ((activeParams.tax_rate || 0.52) * 100).toFixed(1);
+    document.getElementById('discount-rate').value = ((activeParams.discount_rate || 0.15) * 100).toFixed(1);
+    document.getElementById('use-lcf').checked = activeParams.use_lcf || false;
+    if(activeParams.reserve_mbbl) document.getElementById('reserve-mbbl').value = activeParams.reserve_mbbl;
+    document.getElementById('reserve-row').style.display = activeParams.depr_method === 'unit_of_production' ? 'block' : 'none';
 
     // Load rows
     rows = [];
@@ -187,9 +211,9 @@ async function loadProjectDetail(id){
     }
 
     // If has results, render them
-    if(p.last_result){
-      lastResult = p.last_result;
-      renderResults(p.last_result);
+    if(activeResult){
+      lastResult = activeResult;
+      renderResults(activeResult);
       document.getElementById('btn-export').disabled = false;
     }
     
@@ -232,6 +256,58 @@ async function saveProjectData(){
     showToast('Data project berhasil disimpan');
   } catch(e){
     showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function loadHistoryList(){
+  showLoading(true);
+  try {
+    const res = await fetch('/api/history');
+    const history = await res.json();
+    const tbody = document.getElementById('history-tbody');
+    const empty = document.getElementById('history-empty');
+    
+    if(history.length === 0){
+      tbody.parentElement.style.display = 'none';
+      empty.style.display = 'flex';
+      return;
+    }
+    
+    tbody.parentElement.style.display = 'table';
+    empty.style.display = 'none';
+    
+    const methodNames = {
+      straight_line:'Straight Line', declining_balance:'Declining Balance',
+      double_declining:'Double Declining', unit_of_production:'Unit of Production',
+      sum_of_year:'Sum of Year'
+    };
+    
+    tbody.innerHTML = history.map(h => {
+      const date = new Date(h.timestamp).toLocaleString('id-ID',{day:'numeric',month:'short',year:'numeric', hour:'2-digit', minute:'2-digit'});
+      const badge = h.feasible 
+        ? '<span class="badge badge-green">LAYAK</span>' 
+        : '<span class="badge badge-red">TIDAK LAYAK</span>';
+        
+      return `
+        <tr>
+          <td>${date}</td>
+          <td style="font-weight:600; color:var(--accent);">${escHtml(h.project_name)}</td>
+          <td>${methodNames[h.params.depr_method] || h.params.depr_method}</td>
+          <td style="font-weight:700;">${fmt(h.npv,1)}</td>
+          <td>${badge}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="goToProject('${h.project_id}', '${h.history_id}')">
+              Lihat Detail
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    
+  } catch(e){
+    showToast('Gagal memuat history: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
   }
 }
 
