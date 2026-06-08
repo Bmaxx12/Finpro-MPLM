@@ -365,6 +365,39 @@ async def upload_csv(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Gagal membaca CSV: {e}")
 
+@app.get("/api/example-data")
+async def get_example_data():
+    try:
+        # Load the CSV file from data directory
+        file_path = BASE_DIR / "data" / "template_excel_dosen (3).csv"
+        if not file_path.exists():
+            # Fallback to older file name if needed
+            file_path = BASE_DIR / "data" / "template_excel_dosen.csv"
+            if not file_path.exists():
+                raise HTTPException(status_code=404, detail="File CSV contoh tidak ditemukan di folder data")
+        
+        with open(file_path, "r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            rows = []
+            for row in reader:
+                def g(k, default=0.0):
+                    v = row.get(k, "").strip().replace(",", ".")
+                    try:
+                        return float(v) if v else default
+                    except ValueError:
+                        return default
+                rows.append({
+                    "tahun": int(g("tahun", 0)),
+                    "produksi_mbbl": g("produksi_mbbl"),
+                    "harga_minyak_usd": g("harga_minyak_usd", 20.0),
+                    "capital_usd": g("capital_usd"),
+                    "non_capital_usd": g("non_capital_usd"),
+                    "opex_usd": g("opex_usd"),
+                })
+            return JSONResponse(content={"rows": rows, "count": len(rows)})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Gagal memuat contoh CSV: {e}")
+
 @app.post("/api/export-csv")
 async def export_csv(req: CalcRequest):
     result = run_calculation(req)

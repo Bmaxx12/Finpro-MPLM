@@ -425,40 +425,25 @@ function renderTable(){
 }
 
 // ── Example Data ─────────────────────────────────────────────────────────────
-// Cari function loadExample() di dalam file static/app.js
-function loadExample() {
-  const excelData = [
-    { thn: 0, prod: 0, price: 32, cap: 13000, ncap: 8000, opex: 0 },
-    { thn: 1, prod: 175, price: 32, cap: 0, ncap: 0, opex: 180 },
-    { thn: 2, prod: 201, price: 32, cap: 0, ncap: 0, opex: 180 },
-    { thn: 3, prod: 217, price: 32, cap: 0, ncap: 0, opex: 180 },
-    { thn: 4, prod: 198, price: 32, cap: 0, ncap: 0, opex: 184.5 },
-    { thn: 5, prod: 192.06, price: 32, cap: 0, ncap: 0, opex: 189.1125 },
-    { thn: 6, prod: 186.29, price: 32, cap: 0, ncap: 0, opex: 193.8403 },
-    { thn: 7, prod: 180.70, price: 32, cap: 0, ncap: 0, opex: 198.6863 },
-    { thn: 8, prod: 175.28, price: 32, cap: 0, ncap: 0, opex: 203.6535 },
-    { thn: 9, prod: 170.02, price: 32, cap: 0, ncap: 0, opex: 208.7448 },
-    { thn: 10, prod: 164.92, price: 32, cap: 0, ncap: 0, opex: 213.9634 },
-    { thn: 11, prod: 159.97, price: 32, cap: 0, ncap: 0, opex: 219.3125 },
-    { thn: 12, prod: 155.17, price: 32, cap: 0, ncap: 0, opex: 224.7953 },
-    { thn: 13, prod: 150.52, price: 32, cap: 0, ncap: 0, opex: 230.4152 },
-    { thn: 14, prod: 146.00, price: 32, cap: 0, ncap: 0, opex: 236.1756 },
-    { thn: 15, prod: 141.62, price: 32, cap: 0, ncap: 0, opex: 242.0800 },
-    { thn: 16, prod: 137.37, price: 32, cap: 0, ncap: 0, opex: 248.1320 },
-    { thn: 17, prod: 133.25, price: 32, cap: 0, ncap: 0, opex: 254.3353 },
-    { thn: 18, prod: 129.26, price: 32, cap: 0, ncap: 0, opex: 260.6937 },
-    { thn: 19, prod: 125.38, price: 32, cap: 0, ncap: 0, opex: 267.2110 },
-    { thn: 20, prod: 121.62, price: 32, cap: 0, ncap: 0, opex: 273.8913 }
-  ];
-  
-  // Kosongkan tabel saat ini (jangan hapus logika yang ini dari app.js kamu)
-  document.getElementById("input-tbody").innerHTML = "";
-  
-  // Masukkan data baru ke tabel
-  excelData.forEach(row => {
-    // logika insert row yang sudah ada di app.js kamu
-    _addRowWithData(row.thn, row.prod, row.price, row.cap, row.ncap, row.opex);
-  });
+async function loadExample() {
+  showLoading(true);
+  try {
+    const res = await fetch('/api/example-data');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Gagal memuat contoh');
+    
+    // Kosongkan baris yang ada
+    rows = [];
+    rowIdCounter = 0;
+    
+    // Masukkan data baru dari CSV
+    data.rows.forEach(r => addRow(r));
+    showToast(`${data.count} baris contoh berhasil dimuat dari CSV data`);
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
 }
 
 // ── CSV Upload ───────────────────────────────────────────────────────────────
