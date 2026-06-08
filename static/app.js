@@ -536,6 +536,68 @@ async function runCalculation(){
   }
 }
 
+// ── KPI Descriptions ─────────────────────────────────────────────────────────
+function buildKpiDescriptions(ind, params) {
+  const rPct = (params.discount_rate * 100).toFixed(0);
+  const rorPct = ind.ROR != null ? (ind.ROR * 100).toFixed(2) : null;
+
+  let potDesc;
+  if (ind.POT_str && ind.POT_str !== 'Tidak tercapai') {
+    potDesc = `Investasi awal diperkirakan kembali dalam <strong>${ind.POT_str}</strong>. Pada titik ini, arus kas kumulatif berubah dari negatif menjadi positif.`;
+  } else {
+    potDesc = 'Arus kas kumulatif tidak mencapai titik impas hingga akhir periode proyek, sehingga modal awal belum kembali sepenuhnya.';
+  }
+
+  let npvDesc;
+  if (ind.NPV > 0) {
+    npvDesc = `Dengan tingkat diskonto <strong>${rPct}%</strong>, nilai bersih arus kas proyek positif sebesar <strong>$${fmt(ind.NPV, 1)}</strong>. Proyek menghasilkan keuntungan bersih melebihi biaya modal yang disyaratkan.`;
+  } else if (ind.NPV < 0) {
+    npvDesc = `Dengan tingkat diskonto <strong>${rPct}%</strong>, nilai bersih arus kas negatif sebesar <strong>$${fmt(ind.NPV, 1)}</strong>. Proyek tidak memenuhi ambang keuntungan minimum pada tingkat diskonto tersebut.`;
+  } else {
+    npvDesc = `Pada tingkat diskonto <strong>${rPct}%</strong>, nilai bersih arus kas tepat nol. Proyek hanya mencapai titik impas ekonomi tanpa surplus nilai.`;
+  }
+
+  let rorDesc;
+  if (rorPct == null) {
+    rorDesc = 'Tingkat pengembalian internal tidak dapat dihitung dari profil arus kas proyek ini.';
+  } else if (ind.ROR > params.discount_rate) {
+    const diff = ((ind.ROR - params.discount_rate) * 100).toFixed(2);
+    rorDesc = `Tingkat pengembalian internal <strong>${rorPct}%</strong> melebihi tingkat diskonto <strong>${rPct}%</strong> (selisih +${diff} poin). Imbal hasil proyek di atas minimum yang diharapkan investor.`;
+  } else if (ind.ROR < params.discount_rate) {
+    const diff = ((params.discount_rate - ind.ROR) * 100).toFixed(2);
+    rorDesc = `Tingkat pengembalian internal <strong>${rorPct}%</strong> di bawah tingkat diskonto <strong>${rPct}%</strong> (selisih −${diff} poin). Imbal hasil proyek belum memadai relatif terhadap risiko modal.`;
+  } else {
+    rorDesc = `Tingkat pengembalian internal <strong>${rorPct}%</strong> sama dengan tingkat diskonto <strong>${rPct}%</strong>. Proyek tepat memenuhi ekspektasi minimum investor.`;
+  }
+
+  let dprDesc;
+  if (ind.DPR > 1) {
+    const surplus = ((ind.DPR - 1) * 100).toFixed(2);
+    dprDesc = `NPV setara <strong>${fmt(ind.DPR, 4)}×</strong> total investasi (<strong>&gt; 1</strong>). Nilai masa kini proyek melebihi modal awal sebesar <strong>${surplus}%</strong>.`;
+  } else if (ind.DPR > 0) {
+    const shortfall = ((1 - ind.DPR) * 100).toFixed(2);
+    dprDesc = `NPV setara <strong>${fmt(ind.DPR, 4)}×</strong> total investasi (<strong>&lt; 1</strong>). Nilai masa kini belum menutup modal awal, masih kurang <strong>${shortfall}%</strong>.`;
+  } else if (ind.DPR === 0) {
+    dprDesc = 'NPV nol relatif terhadap investasi. Proyek tidak menghasilkan surplus nilai setelah memperhitungkan waktu nilai uang.';
+  } else {
+    dprDesc = `NPV negatif (<strong>${fmt(ind.DPR, 4)}×</strong> investasi). Nilai masa kini proyek lebih rendah dari total modal yang dikeluarkan.`;
+  }
+
+  let pirDesc;
+  if (ind.PIR > 1) {
+    pirDesc = `Total arus kas tanpa diskonto adalah <strong>${fmt(ind.PIR, 4)}×</strong> investasi. Setiap <strong>$1</strong> modal menghasilkan <strong>$${fmt(ind.PIR, 2)}</strong> arus kas kumulatif selama masa proyek.`;
+  } else if (ind.PIR > 0) {
+    const shortfall = ((1 - ind.PIR) * 100).toFixed(2);
+    pirDesc = `Total arus kas tanpa diskonto hanya <strong>${fmt(ind.PIR, 4)}×</strong> investasi. Modal belum kembali secara nominal, masih kurang <strong>${shortfall}%</strong>.`;
+  } else if (ind.PIR === 0) {
+    pirDesc = 'Total arus kas tanpa diskonto nol. Proyek tidak menghasilkan arus kas bersih setelah seluruh pengeluaran.';
+  } else {
+    pirDesc = `Total arus kas tanpa diskonto negatif (<strong>${fmt(ind.PIR, 4)}×</strong> investasi). Kerugian nominal melebihi modal yang dikeluarkan.`;
+  }
+
+  return { potDesc, npvDesc, rorDesc, dprDesc, pirDesc };
+}
+
 // ── Render Results ───────────────────────────────────────────────────────────
 function renderResults(data){
   const sec = document.getElementById('results-section');
@@ -563,12 +625,38 @@ function renderResults(data){
 
   // KPIs
   const rorVal = ind.ROR != null ? (ind.ROR*100).toFixed(2)+'%' : 'N/A';
+  const desc = buildKpiDescriptions(ind, params);
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi"><div class="kpi-label">POT</div><div class="kpi-value" style="font-size:1rem">${ind.POT_str||'—'}</div><div class="kpi-sub">Pay Out Time</div></div>
-    <div class="kpi ${feasible?'feasible':'not-feasible'}"><div class="kpi-label">NPV</div><div class="kpi-value" style="color:${feasible?'var(--green)':'var(--red)'}">${fmt(ind.NPV,1)}</div><div class="kpi-sub">r = ${(params.discount_rate*100).toFixed(0)}% | $</div></div>
-    <div class="kpi"><div class="kpi-label">ROR / IRR</div><div class="kpi-value">${rorVal}</div><div class="kpi-sub">Rate of Return</div></div>
-    <div class="kpi"><div class="kpi-label">DPR</div><div class="kpi-value">${fmt(ind.DPR,4)}</div><div class="kpi-sub">Discounted P/I Ratio</div></div>
-    <div class="kpi"><div class="kpi-label">PIR</div><div class="kpi-value">${fmt(ind.PIR,4)}</div><div class="kpi-sub">Profit/Investment Ratio</div></div>
+    <div class="kpi">
+      <div class="kpi-label">POT</div>
+      <div class="kpi-value" style="font-size:1rem">${ind.POT_str||'—'}</div>
+      <div class="kpi-sub">Pay Out Time</div>
+      <div class="kpi-desc">${desc.potDesc}</div>
+    </div>
+    <div class="kpi ${feasible?'feasible':'not-feasible'}">
+      <div class="kpi-label">NPV</div>
+      <div class="kpi-value" style="color:${feasible?'var(--green)':'var(--red)'}">${fmt(ind.NPV,1)}</div>
+      <div class="kpi-sub">r = ${(params.discount_rate*100).toFixed(0)}% | $</div>
+      <div class="kpi-desc">${desc.npvDesc}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">ROR / IRR</div>
+      <div class="kpi-value">${rorVal}</div>
+      <div class="kpi-sub">Rate of Return</div>
+      <div class="kpi-desc">${desc.rorDesc}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">DPR</div>
+      <div class="kpi-value">${fmt(ind.DPR,4)}</div>
+      <div class="kpi-sub">Discounted P/I Ratio</div>
+      <div class="kpi-desc">${desc.dprDesc}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">PIR</div>
+      <div class="kpi-value">${fmt(ind.PIR,4)}</div>
+      <div class="kpi-sub">Profit/Investment Ratio</div>
+      <div class="kpi-desc">${desc.pirDesc}</div>
+    </div>
   `;
 
   // Cash flow table
